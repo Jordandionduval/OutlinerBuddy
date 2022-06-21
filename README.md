@@ -6,16 +6,15 @@ A little tool used with Maya to replace the default renaming tool.
 I made this tool as a way to practice python. The goal when creating this tool was to replace Maya's old renaming tool for something a little more versatile and powerful.
 
 ### Installation
-Copy the "jdd_outlinerBuddy.py" to your Maya scripts directory:
+1. Copy the "jdd_outlinerBuddy.py" to your Maya scripts directory:
 >MyDocuments\Maya\scripts\
 
-Use this text as a python script within Maya to run the tool:
+2. Then, within maya, use the following text as a python script to run the tool:
 ```
 import jdd_outlinerBuddy as OB
 OB.UI()
 ```
-
-Alternatively, this text can also be saved in the custom shelf using maya's script editor.
+3. *(Optional)* Alternatively, the text can be saved in the custom shelf using maya's script editor. This makes the script a small button in your current shelf so it can easily be accessed later.
 
 ### Patch notes
 ###### v1.0.0
