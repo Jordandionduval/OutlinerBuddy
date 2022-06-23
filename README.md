@@ -30,3 +30,5 @@ OB.UI()
 - The 'Hierarchy' selection method gets interrupted when renaming a list partially containing the target word.
 - The 'All' selection method sends back an error message.
 - When using incrementation in the 'rename' section of the tool, the first number happens to be wrong sometimes. Pressing the rename button again after that solves the issue.
+- Renaming command breaks when trying to rename objects that have duplicate names down in the hierarchy
+- Renaming command breaks when trying to rename objects from shortest to longest name (in terms of the full path's name). Longest to shortest works as intended.
