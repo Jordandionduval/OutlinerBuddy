@@ -243,43 +243,6 @@ class buddyOutl_Window(object):
         z = '0' * y + str(num)
         return z
     
-    #def cutPathName(self, name, x='|'):
-    #    wordLength = len(name)
-    #    try:
-    #        nameIndex = name[::-1].index(x)
-    #    except:
-    #        nameIndex = wordLength
-    #
-    #    res = wordLength - nameIndex
-    #    return res
-
-    #def shortName(self, name, x='|'):
-    #    nameIndex = self.cutPathName(name, x)
-    #    res = name[nameIndex:]
-    #    return res
-
-    #def fullName(self, name, isNameNew=False, newName='', x='|'):
-    #    nameIndex = self.cutPathName(name, x)
-    #    if isNameNew == False:
-    #        shortName = self.shortName(name)
-    #    else:
-    #        shortName = newName
-    #    
-    #    partialName = str(name[:nameIndex])
-    #    
-    #    res = partialName + shortName
-    #    return res
-
-    def shorten(self, name, x='|'):
-        wordLength = len(name)
-        try:
-            nameIndex = name[::-1].index(x)
-        except:
-            nameIndex = wordLength
-
-        nameIndex = wordLength - nameIndex
-        return name[:nameIndex]
-    
     def quickAdd(self, x, isPrefix, separator='_'):
         operationCount = 0
         for i in self.funcSort(self.selectionMethod, 1):
