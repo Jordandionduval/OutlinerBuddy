@@ -601,13 +601,13 @@ class buddyOutl_Window(object):
                         nameBase = self.updateBaseInput()
                     else:
                         if '|' in i:
-                            nameShort = i.split('|')[-1]
-                            nameBaseRF = nameShort[repF::]
-                            nameBaseRF = nameBaseRF[::-1]
-                            nameBaseRL = nameBaseRF[repL::]
-                            nameBase = nameBaseRL[::-1]
+                            nameBase = i.split('|')[-1]
                         else:
                             nameBase = i
+                        nameBaseRF = nameBase[repF::]
+                        nameBaseRF = nameBaseRF[::-1]
+                        nameBaseRL = nameBaseRF[repL::]
+                        nameBase = nameBaseRL[::-1]
 
                     if self.setIncCheck() == True:
                         if self.setBaseCheck() == False and self.setSuffixCheck() == False:
