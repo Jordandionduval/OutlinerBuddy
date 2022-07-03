@@ -82,15 +82,17 @@ class buddyOutl_Window(object):
         
         #-----Rename-----#
         cmds.rowColumnLayout(nc=4, cw = [(1, 80), (2, 180), (3, 100), (4,40)])
-        self.baseCheck = cmds.checkBox(l='Base name', v = True, cc = self.setBaseCheck)
+        defaultBaseBool = 1
+        defaultBaseBoolInv = 1-defaultBaseBool
+        self.baseCheck = cmds.checkBox(l='Base name', v = defaultBaseBool, cc = self.setBaseCheck)
         self.baseInput = cmds.textFieldGrp(adj = True, cc = self.updateBaseInput)
         self.renameReplaceLabel = cmds.text(al = 'left', l="")
         self.empty = cmds.text(l="")
         
         self.prefixCheck = cmds.checkBox(l='Prefix', v = True, cc = self.setPrefixCheck)
         self.prefixInput = cmds.textFieldGrp(adj = True, cc = self.updatePrefixInput)
-        self.replaceFirstCheck = cmds.checkBox(label='Replace first', en = False, cc = self.setReplaceFirstCheck)
-        self.replaceFirstInput = cmds.intField(v=1, min=1, po=True, en = False, cc = self.updateReplaceFirstInput)
+        self.replaceFirstCheck = cmds.checkBox(label='Replace first', en = defaultBaseBoolInv, cc = self.setReplaceFirstCheck)
+        self.replaceFirstInput = cmds.intField(v=1, min=1, po=True, en = defaultBaseBoolInv, cc = self.updateReplaceFirstInput)
         
         self.suffixCheck = cmds.checkBox(l='Suffix', v = True, cc = self.setSuffixCheck)
         self.suffixInput = cmds.textFieldGrp(adj = True, cc = self.updateSuffixInput)
@@ -98,24 +100,25 @@ class buddyOutl_Window(object):
         self.replaceLastInput = cmds.intField(v=1, min=1, po=True, en = False, cc = self.updateReplaceLastInput)
         cmds.setParent('..')
         
+        defaultIncBool = 1
         cmds.rowColumnLayout(nc=3, cw = [(1, 80), (2, 100), (3, 100)])
-        self.incCheck = cmds.checkBox(l='Increment', v = True, cc = self.setIncCheck)
+        self.incCheck = cmds.checkBox(l='Increment', v = defaultIncBool, cc = self.setIncCheck)
         cmds.setParent('..')
         
         cmds.rowColumnLayout(nc=5, cw = [(1, 20), (2, 80), (3, 40), (4,100), (5,40)])
         self.empty = cmds.text(l="")
-        self.startCheck = cmds.checkBox(label='Start', v = True, cc = self.setStartCheck, en = False)
-        self.startInput = cmds.intField(v=1, min=1, po=True, cc = self.updateStartInput, en = False)
+        self.startCheck = cmds.checkBox(label='Start', v = True, cc = self.setStartCheck, en = defaultIncBool)
+        self.startInput = cmds.intField(v=1, min=1, po=True, cc = self.updateStartInput, en = defaultIncBool)
         self.empty = cmds.text(l="")
         self.empty = cmds.text(l="")
         self.empty = cmds.text(l="")
-        self.stepCheck = cmds.checkBox(label='Step', v = True, cc = self.setStepCheck, en = False)
-        self.stepInput = cmds.intField(v=1, min=1, po=True, cc = self.updateStepInput, en = False)
+        self.stepCheck = cmds.checkBox(label='Step', v = True, cc = self.setStepCheck, en = defaultIncBool)
+        self.stepInput = cmds.intField(v=1, min=1, po=True, cc = self.updateStepInput, en = defaultIncBool)
         self.empty = cmds.text(l="")
         self.empty = cmds.text(l="")
         self.empty = cmds.text(l="")
-        self.paddingCheck = cmds.checkBox(label='Padding', v = True, cc = self.setPaddingCheck, en = False)
-        self.paddingInput = cmds.intField(v=1, min=1, po=True, cc = self.updatePaddingInput, en = False)
+        self.paddingCheck = cmds.checkBox(label='Padding', v = True, cc = self.setPaddingCheck, en = defaultIncBool)
+        self.paddingInput = cmds.intField(v=1, min=1, po=True, cc = self.updatePaddingInput, en = defaultIncBool)
         self.empty = cmds.text(l="")
         self.empty = cmds.text(l="")
         
