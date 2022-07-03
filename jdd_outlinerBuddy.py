@@ -489,7 +489,7 @@ class buddyOutl_Window(object):
         return self.baseCQ
     def setPrefixCheck(self, *args):
         self.prefixCQ = cmds.checkBox(self.prefixCheck, query = True, v = True)
-        return str(self.prefixCQ)
+        return self.prefixCQ
     def setReplaceFirstCheck(self, *args):
         self.replaceFirstCQ = cmds.checkBox(self.replaceFirstCheck, query = True, v = True)
         return self.replaceFirstCQ
