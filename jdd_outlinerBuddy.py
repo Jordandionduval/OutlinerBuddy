@@ -555,7 +555,7 @@ class buddyOutl_Window(object):
     #-----Rename-----#
     def renameText(self, *args):
         
-        def runRenameText(op=0, cl=['']):
+        def runRenameText(op=0, cl=[]):
             operationCount = op
             #Pre/Suffix
             if self.setPrefixCheck() == True:
@@ -597,19 +597,17 @@ class buddyOutl_Window(object):
 
             selectionList = self.funcSort(self.selectionMethod, 1)
             completedList = cl
-
-            if '' not in completedList:
+            if len(cl) > 0:
                 for i in completedList:
-                    currentList = selectionList.remove(i)
-            else:
-                currentList = selectionList
+                    print ('Removing.....'+ i)
+                    selectionList.remove(i)
             
-            for i in currentList:
+            for i in selectionList:
                 try:
                     if self.setBaseCheck() == True:
                         nameBase = self.updateBaseInput()
                     else:
-                        if '|' in i:
+                        if '|' in i: #Separate duplicate from parents
                             nameBase = i.split('|')[-1]
                         else:
                             nameBase = i
@@ -626,11 +624,12 @@ class buddyOutl_Window(object):
                             nameInc += nameStep
                     else:
                         newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
+                    
                     operationCount += 1
                     cmds.rename(i, newName)
                     completedList = completedList + [newName]
                 except RuntimeError:
-                    runRenameText(operationCount)
+                    runRenameText(operationCount, completedList)
                 
             return operationCount
         
