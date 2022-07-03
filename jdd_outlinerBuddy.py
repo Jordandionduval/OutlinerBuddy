@@ -99,7 +99,7 @@ class buddyOutl_Window(object):
         cmds.setParent('..')
         
         cmds.rowColumnLayout(nc=3, cw = [(1, 80), (2, 100), (3, 100)])
-        self.incCheck = cmds.checkBox(l='Increment', cc = self.setIncCheck)
+        self.incCheck = cmds.checkBox(l='Increment', v = True, cc = self.setIncCheck)
         cmds.setParent('..')
         
         cmds.rowColumnLayout(nc=5, cw = [(1, 20), (2, 80), (3, 40), (4,100), (5,40)])
