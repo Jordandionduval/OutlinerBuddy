@@ -554,105 +554,108 @@ class buddyOutl_Window(object):
     
     #-----Rename-----#
     def renameText(self, *args):
-        operationCount = 0
         
-        #Pre/Suffix
-        if self.setPrefixCheck() == True:
-            namePrefix = self.updatePrefixInput()
-        else:
-            namePrefix = ''
-        
-        if self.setSuffixCheck() == True:
-            nameSuffix = self.updateSuffixInput()
-        else:
-            nameSuffix = ''
-        
-        #Replace First/Last
-        if self.setReplaceFirstCheck() == True:
-            repF = self.updateReplaceFirstInput()
-        else:
-            repF = 0
+        def runRenameText(op=0):
+            operationCount = op
+            #Pre/Suffix
+            if self.setPrefixCheck() == True:
+                namePrefix = self.updatePrefixInput()
+            else:
+                namePrefix = ''
 
-        if self.setReplaceLastCheck() == True:
-            repL = self.updateReplaceLastInput()
-        else:
-            repL = 0
+            if self.setSuffixCheck() == True:
+                nameSuffix = self.updateSuffixInput()
+            else:
+                nameSuffix = ''
 
-        #Increment
-        if self.setIncCheck() == True:
-            nameInc = self.updateStartInput()
-        else:
-            nameInc = ''
+            #Replace First/Last
+            if self.setReplaceFirstCheck() == True:
+                repF = self.updateReplaceFirstInput()
+            else:
+                repF = 0
 
-        if self.setStepCheck() == True:
-            nameStep = self.updateStepInput()
-        else:
-            nameStep = 1
-        
-        if self.setPaddingCheck() == True:
-            namePad = self.updatePaddingInput()
-        else:
-            namePad = 0
-        
-        for i in self.funcSort(self.selectionMethod, 1):
-            try:
-                if self.setBaseCheck() == True:
-                    nameBase = self.updateBaseInput()
-                else:
-                    if '|' in i:
-                        nameShort = i.split('|')[-1]
-                        nameBaseRF = nameShort[repF::]
-                        nameBaseRF = nameBaseRF[::-1]
-                        nameBaseRL = nameBaseRF[repL::]
-                        nameBase = nameBaseRL[::-1]
+            if self.setReplaceLastCheck() == True:
+                repL = self.updateReplaceLastInput()
+            else:
+                repL = 0
+
+            #Increment
+            if self.setIncCheck() == True:
+                nameInc = self.updateStartInput()
+            else:
+                nameInc = ''
+
+            if self.setStepCheck() == True:
+                nameStep = self.updateStepInput()
+            else:
+                nameStep = 1
+
+            if self.setPaddingCheck() == True:
+                namePad = self.updatePaddingInput()
+            else:
+                namePad = 0
+
+            for i in self.funcSort(self.selectionMethod, 1):
+                try:
+                    if self.setBaseCheck() == True:
+                        nameBase = self.updateBaseInput()
                     else:
-                        nameBase = i
+                        if '|' in i:
+                            nameShort = i.split('|')[-1]
+                            nameBaseRF = nameShort[repF::]
+                            nameBaseRF = nameBaseRF[::-1]
+                            nameBaseRL = nameBaseRF[repL::]
+                            nameBase = nameBaseRL[::-1]
+                        else:
+                            nameBase = i
 
-                if self.setIncCheck() == True:
-                    if self.setBaseCheck() == False and self.setSuffixCheck() == False:
+                    if self.setIncCheck() == True:
+                        if self.setBaseCheck() == False and self.setSuffixCheck() == False:
+                            newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
+                        else:
+                            newName = str(namePrefix) + str(nameBase) + str(nameSuffix) + str(self.zeroPad(nameInc, namePad))
+                            nameInc += nameStep
+                    else:
                         newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
-                    else:
-                        newName = str(namePrefix) + str(nameBase) + str(nameSuffix) + str(self.zeroPad(nameInc, namePad))
-                        nameInc += nameStep
-                else:
-                    newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
-                operationCount += 1
-                print(namePrefix)
-                cmds.rename(i, newName)
-            except RuntimeError:
-                self.renameText()
-            #if '|' in i:
-            #    namePath = cmds.listRelatives(f=1, s=0)
-            #    namePath=''.join(namePath)
-            #    namePath=namePath.split('|')
-            #    namePathLength = len(namePath)
-            #    namePath = "|".join(namePath[:namePathLength-1])
-            #    k = '|' + i
-            #    #currentName = cmds.ls(i, long=True)
-            #    #currentName = currentName[0]
-            #    #iL = len(i)
-            #    #pL = len(currentName)
-            #    #fL = pL-iL
-            #    #target = currentName[:fL]
-            #    endName = namePath + '|' + newName
-            #    cmds.rename(k, endName)
-            #else:
-            #    cmds.rename(i, newName)
-            #try:
-            #    cmds.rename(i, newName)
-            #except RuntimeError:
-            #    try:
-            #        currentName = cmds.listRelatives(fullPath=True)
-            #        namePath = currentName.split('|')
-            #        l=len(namePath)
-            #        l-=1
-            #        currentName=namePath[:l].join('|')
-            #
-            #        endName = currentName + newName
-            #        cmds.rename(i, endName)
-            #    except:
-            #        continue
+                    operationCount += 1
+                    cmds.rename(i, newName)
+                except RuntimeError:
+                    runRenameText(operationCount)
                 
+            return operationCount
+        operationCount = runRenameText()
+        runRenameText()
+        #if '|' in i:
+        #    namePath = cmds.listRelatives(f=1, s=0)
+        #    namePath=''.join(namePath)
+        #    namePath=namePath.split('|')
+        #    namePathLength = len(namePath)
+        #    namePath = "|".join(namePath[:namePathLength-1])
+        #    k = '|' + i
+        #    #currentName = cmds.ls(i, long=True)
+        #    #currentName = currentName[0]
+        #    #iL = len(i)
+        #    #pL = len(currentName)
+        #    #fL = pL-iL
+        #    #target = currentName[:fL]
+        #    endName = namePath + '|' + newName
+        #    cmds.rename(k, endName)
+        #else:
+        #    cmds.rename(i, newName)
+        #try:
+        #    cmds.rename(i, newName)
+        #except RuntimeError:
+        #    try:
+        #        currentName = cmds.listRelatives(fullPath=True)
+        #        namePath = currentName.split('|')
+        #        l=len(namePath)
+        #        l-=1
+        #        currentName=namePath[:l].join('|')
+        #
+        #        endName = currentName + newName
+        #        cmds.rename(i, endName)
+        #    except:
+        #        continue
                 
         if operationCount > 0:
             print("Renamed " + str(operationCount) + " object(s).")
