@@ -242,22 +242,11 @@ class buddyOutl_Window(object):
             y = 0
         z = '0' * y + str(num)
         return z
-
-    def shortName(self, n, x='|'):
-        wordLength = len(n)
-
-        try:
-            nameIndex = n[::-1].index(x)
-        except:
-            nameIndex = wordLength
-
-        nameIndex = wordLength - nameIndex
-        return n[nameIndex:]
     
     def quickAdd(self, x, isPrefix, separator='_'):
         operationCount = 0
         for i in self.funcSort(self.selectionMethod, 1):
-            oldName = self.shortName(i)
+            oldName = i.split('|')[-1]
             if isPrefix == True:
                 newName = x + separator + oldName
             else:
@@ -315,17 +304,17 @@ class buddyOutl_Window(object):
         for i in self.funcSort(self.selectionMethod, 1):
             if self.setMatchCaseCheck() == False:
                 l = len(target)
-                oldName = self.shortName(i.upper())
+                oldName = i.upper().split('|')[-1]
                 try:
                     n = oldName.index(target.upper())
 
-                    oldName = self.shortName(i)
+                    oldName = i.split('|')[-1]
                     newName = oldName[:n] + replacement + oldName[(n+l):]
                 except:
-                    oldName = self.shortName(i)
+                    oldName = i.split('|')[-1]
                     newName = oldName
             else:
-                oldName = self.shortName(i)
+                oldName = i.split('|')[-1]
                 newName = oldName.replace(target, replacement)
             
             cmds.rename(i, newName)
@@ -334,7 +323,7 @@ class buddyOutl_Window(object):
                     operationCount += 1
                 else:
                     failureCount += 1
-                    failureList += [self.shortName(i)]
+                    failureList += [i.split('|')[-1]]
             else:
                 operationCount += 1
         
@@ -347,24 +336,23 @@ class buddyOutl_Window(object):
             else:
                 print("Replaced \"" + target + "\" with \"" + replacement + "\" in " + str(operationCount) + " object(s).")
     
-    def listSl(self, *args):
+    def listSl(self):
         res = cmds.ls(sl=True)
 
         return res
 
-    def listHi(self, *args):
+    def listHi(self):
         cmds.select(hi=True)
         res = cmds.ls(sl=True)
         cmds.undo()
 
         return res
     
-    def listAll(self, *args):
+    def listAll(self):
         res = cmds.ls(dag=True, ro = False)
 
         return res
 
-            
     #-----Update Input Queries-----#
     def updateSearchInput(self, *args):
         self.searchIQ = cmds.textField(self.searchInput, query = True, text = True)
@@ -431,19 +419,17 @@ class buddyOutl_Window(object):
             return [selectType, res]
     
     def selectionStatus(self, *args):
-        selectSlIQ = cmds.radioButton(self.selectMethod1, query = True, sl = True)
-        selectHiIQ = cmds.radioButton(self.selectMethod2, query = True, sl = True)
-        selectAllIQ = cmds.radioButton(self.selectMethod3, query = True, sl = True)
+        method = self.funcSort(self.selectionMethod, 0)
 
-        if selectSlIQ == True:
+        if method == 'selectSl':
             res = self.listSl()
             print('Current object list: ' + str(res))
     
-        elif selectHiIQ == True:
+        elif method == 'selectHi':
             res = self.listHi()
             print('Current object list: ' + str(res))
     
-        elif selectAllIQ == True:
+        elif method == 'selectAll':
             res = self.listAll()
             print('Current object list: ' + str(res))
     
@@ -523,8 +509,6 @@ class buddyOutl_Window(object):
 
     #-----Replace-----#
     def replaceText(self, *args):
-        self.selectionMethod()
-        
         searchIn = self.updateSearchInput()
         replaceIn = self.updateReplaceInput()
         
@@ -533,74 +517,123 @@ class buddyOutl_Window(object):
     
     #-----Rename-----#
     def renameText(self, *args):
-        self.selectionMethod()
         
-        operationCount = 0
-        
-        #Pre/Suffix
-        if self.setPrefixCheck() == True:
-            namePrefix = self.updatePrefixInput()
-        else:
-            namePrefix = ''
-        
-        if self.setSuffixCheck() == True:
-            nameSuffix = self.updateSuffixInput()
-        else:
-            nameSuffix = ''
-        
-        #Replace First/Last
-        if self.setReplaceFirstCheck() == True:
-            repF = self.updateReplaceFirstInput()
-        else:
-            repF = 0
-
-        if self.setReplaceLastCheck() == True:
-            repL = self.updateReplaceLastInput()
-        else:
-            repL = 0
-
-        #Increment
-        if self.setIncCheck() == True:
-            nameInc = self.updateStartInput()
-        else:
-            nameInc = ''
-
-        if self.setStepCheck() == True:
-            nameStep = self.updateStepInput()
-        else:
-            nameStep = 1
-        
-        if self.setPaddingCheck() == True:
-            namePad = self.updatePaddingInput()
-        else:
-            namePad = 0
-
-        for i in self.funcSort(self.selectionMethod, 1):
-            if self.setBaseCheck() == True:
-                nameBase = self.updateBaseInput()
+        def runRenameText(op=0, cl=[]):
+            operationCount = op
+            #Pre/Suffix
+            if self.setPrefixCheck() == True:
+                namePrefix = self.updatePrefixInput()
             else:
-                nameShort = self.shortName(i)
-                nameBaseRF = nameShort[repF::]
-                nameBaseRF = nameBaseRF[::-1]
-                nameBaseRL = nameBaseRF[repL::]
-                nameBase = nameBaseRL[::-1]
+                namePrefix = ''
 
+            if self.setSuffixCheck() == True:
+                nameSuffix = self.updateSuffixInput()
+            else:
+                nameSuffix = ''
+
+            #Replace First/Last
+            if self.setReplaceFirstCheck() == True:
+                repF = self.updateReplaceFirstInput()
+            else:
+                repF = 0
+
+            if self.setReplaceLastCheck() == True:
+                repL = self.updateReplaceLastInput()
+            else:
+                repL = 0
+
+            #Increment
             if self.setIncCheck() == True:
-                if self.setBaseCheck() == False and self.setSuffixCheck() == False:
-                    newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
-                else:
-                    newName = str(namePrefix) + str(nameBase) + str(nameSuffix) + str(self.zeroPad(nameInc, namePad))
-                    nameInc += nameStep
+                nameInc = self.updateStartInput()
             else:
-                newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
-            operationCount += 1
-            cmds.rename(i, newName)
+                nameInc = ''
+
+            if self.setStepCheck() == True:
+                nameStep = self.updateStepInput()
+            else:
+                nameStep = 1
+
+            if self.setPaddingCheck() == True:
+                namePad = self.updatePaddingInput()
+            else:
+                namePad = 0
+
+            selectionList = self.funcSort(self.selectionMethod, 1)
+            completedList = cl
+            if len(cl) > 0:
+                for i in completedList:
+                    selectionList.remove(i)
+            
+            for i in selectionList:
+                try:
+                    if self.setBaseCheck() == True:
+                        nameBase = self.updateBaseInput()
+                    else:
+                        if '|' in i: #Separate duplicate from parents
+                            nameBase = i.split('|')[-1]
+                        else:
+                            nameBase = i
+                        nameBaseRF = nameBase[repF::]
+                        nameBaseRF = nameBaseRF[::-1]
+                        nameBaseRL = nameBaseRF[repL::]
+                        nameBase = nameBaseRL[::-1]
+
+                    if self.setIncCheck() == True:
+                        if self.setBaseCheck() == False and self.setSuffixCheck() == False:
+                            newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
+                        else:
+                            newName = str(namePrefix) + str(nameBase) + str(self.zeroPad(nameInc, namePad)) + str(nameSuffix)
+                            nameInc += nameStep
+                    else:
+                        newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
+                    
+                    operationCount += 1
+                    cmds.rename(i, newName)
+                    completedList = completedList + [newName]
+                except RuntimeError:
+                    runRenameText(operationCount, completedList)
+                
+            return operationCount
+        
+        operationCount = runRenameText()
+
+        #if '|' in i:
+        #    namePath = cmds.listRelatives(f=1, s=0)
+        #    namePath=''.join(namePath)
+        #    namePath=namePath.split('|')
+        #    namePathLength = len(namePath)
+        #    namePath = "|".join(namePath[:namePathLength-1])
+        #    k = '|' + i
+        #    #currentName = cmds.ls(i, long=True)
+        #    #currentName = currentName[0]
+        #    #iL = len(i)
+        #    #pL = len(currentName)
+        #    #fL = pL-iL
+        #    #target = currentName[:fL]
+        #    endName = namePath + '|' + newName
+        #    cmds.rename(k, endName)
+        #else:
+        #    cmds.rename(i, newName)
+        #try:
+        #    cmds.rename(i, newName)
+        #except RuntimeError:
+        #    try:
+        #        currentName = cmds.listRelatives(fullPath=True)
+        #        namePath = currentName.split('|')
+        #        l=len(namePath)
+        #        l-=1
+        #        currentName=namePath[:l].join('|')
+        #
+        #        endName = currentName + newName
+        #        cmds.rename(i, endName)
+        #    except:
+        #        continue
+                
         if operationCount > 0:
-            print("Renamed " + str(operationCount) + " object(s) with \"" + str(self.updatePrefixInput()) + str(self.updateBaseInput()) + str(self.updateSuffixInput()) + "\".")
+            print("Renamed " + str(operationCount) + " object(s).")
     
     #-----Quick Suffix-----#
     def addGrp(self, *args):
-        self.selectionMethod()
         x = 'Grp'
         if self.setUpperCheck() == True:
             x = x.upper()
@@ -608,7 +641,6 @@ class buddyOutl_Window(object):
         self.quickAdd(x, isPrefix)
     
     def addCtrl(self, *args):
-        self.selectionMethod()
         x = 'Ctrl'
         if self.setUpperCheck() == True:
             x = x.upper()
@@ -616,7 +648,6 @@ class buddyOutl_Window(object):
         self.quickAdd(x, isPrefix)
     
     def addDrv(self, *args):
-        self.selectionMethod()
         x = 'Drv'
         if self.setUpperCheck() == True:
             x = x.upper()
@@ -624,7 +655,6 @@ class buddyOutl_Window(object):
         self.quickAdd(x, isPrefix)
     
     def addJnt(self, *args):
-        self.selectionMethod()
         x = 'Jnt'
         if self.setUpperCheck() == True:
             x = x.upper()
@@ -632,7 +662,6 @@ class buddyOutl_Window(object):
         self.quickAdd(x, isPrefix)
     
     def addGeo(self, *args):
-        self.selectionMethod()
         x = 'Geo'
         if self.setUpperCheck() == True:
             x = x.upper()
@@ -640,7 +669,6 @@ class buddyOutl_Window(object):
         self.quickAdd(x, isPrefix)
     
     def addL(self, *args):
-        self.selectionMethod()
         x = 'L'
         if self.setUpperCheck() == True:
             x = x.upper()
@@ -648,7 +676,6 @@ class buddyOutl_Window(object):
         self.quickAdd(x, isPrefix)
     
     def addC(self, *args):
-        self.selectionMethod()
         x = 'C'
         if self.setUpperCheck() == True:
             x = x.upper()
@@ -656,7 +683,6 @@ class buddyOutl_Window(object):
         self.quickAdd(x, isPrefix)
     
     def addR(self, *args):
-        self.selectionMethod()
         x = 'R'
         if self.setUpperCheck() == True:
             x = x.upper()
@@ -665,13 +691,11 @@ class buddyOutl_Window(object):
     
     #-----Remove-----#
     def removeFirst(self, *args):
-        self.selectionMethod()
-        
         operationCounter = 0
         remF = self.updateRemoveFirstInput()
 
         for i in self.funcSort(self.selectionMethod, 1):
-            nameShort = self.shortName(i)
+            nameShort = i.split('|')[-1]
             nameBase = nameShort[remF:]
 
             cmds.rename(i, nameBase)
@@ -680,13 +704,11 @@ class buddyOutl_Window(object):
             print("Removed first " + str(remF) + " character(s) on " + str(operationCounter) + " object(s).")
     
     def removeLast(self, *args):
-        self.selectionMethod()
-        
         operationCounter = 0
         remL = self.updateRemoveLastInput()
         
         for i in self.funcSort(self.selectionMethod, 1):
-            nameShort = self.shortName(i)[::-1]
+            nameShort = i.split('|')[-1][::-1]
             nameBaseRL = nameShort[remL:]
             nameBase = nameBaseRL[::-1]
 
@@ -696,8 +718,6 @@ class buddyOutl_Window(object):
             print("Removed last " + str(remL) + " character(s) on " + str(operationCounter) + " object(s).")
     
     def removeSelected(self, *args):
-        self.selectionMethod()
-        
         if self.setRemovePastedCheck() == True:
             self.fastReplace('pasted__')
         if self.setRemoveSpecialCheck() == True:
@@ -712,8 +732,6 @@ class buddyOutl_Window(object):
 
     #-----Selection-----#
     def selectByType(self, t):
-        self.selectionMethod()
-        
         try:
             selectionList = cmds.ls(sl=True)
             if t != 'joint':
