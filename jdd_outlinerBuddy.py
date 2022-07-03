@@ -622,7 +622,7 @@ class buddyOutl_Window(object):
                         if self.setBaseCheck() == False and self.setSuffixCheck() == False:
                             newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
                         else:
-                            newName = str(namePrefix) + str(nameBase) + str(nameSuffix) + str(self.zeroPad(nameInc, namePad))
+                            newName = str(namePrefix) + str(nameBase) + str(self.zeroPad(nameInc, namePad)) + str(nameSuffix)
                             nameInc += nameStep
                     else:
                         newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
