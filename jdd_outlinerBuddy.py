@@ -599,7 +599,6 @@ class buddyOutl_Window(object):
             completedList = cl
             if len(cl) > 0:
                 for i in completedList:
-                    print ('Removing.....'+ i)
                     selectionList.remove(i)
             
             for i in selectionList:
