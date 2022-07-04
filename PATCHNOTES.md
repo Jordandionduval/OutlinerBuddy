@@ -1,4 +1,12 @@
 ### Patch notes
+###### v1.1.0
+Restructuring the general selection method used to rename objects.
+Objects are still numbered in the selection order, but internally are renamed from the furthest child first going up the hierarchy.
+This will fix many issues that broke the command before, as the selection list doesn't need to be updated when a parent is renamed.
+- Added new bottomTop_2t() function for most selection methods
+- Added a more complex version of bottomTop_2t within the renaming tool due to more complex variables
+- Added more error prints to fastReplace(), removeFirst() and removeLast()
+
 ###### v1.0.2
 Bugfixes related to the renaming tool's behavior:
 - Added exception to rerun command when command breaks
