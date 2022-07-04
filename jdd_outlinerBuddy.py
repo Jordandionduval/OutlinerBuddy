@@ -514,7 +514,7 @@ class buddyOutl_Window(object):
     def replaceText(self, *args):
         searchIn = self.updateSearchInput()
         replaceIn = self.updateReplaceInput()
-        
+
         self.fastReplace(searchIn, replaceIn)
 
     
