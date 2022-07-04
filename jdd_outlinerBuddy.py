@@ -520,119 +520,96 @@ class buddyOutl_Window(object):
     
     #-----Rename-----#
     def renameText(self, *args):
+        operationCount = 0
+        #Pre/Suffix
+        if self.setPrefixCheck() == True:
+            namePrefix = self.updatePrefixInput()
+        else:
+            namePrefix = ''
+
+        if self.setSuffixCheck() == True:
+            nameSuffix = self.updateSuffixInput()
+        else:
+            nameSuffix = ''
+
+        #Replace First/Last
+        if self.setReplaceFirstCheck() == True:
+            repF = self.updateReplaceFirstInput()
+        else:
+            repF = 0
+
+        if self.setReplaceLastCheck() == True:
+            repL = self.updateReplaceLastInput()
+        else:
+            repL = 0
+
+        #Increment
+        if self.setIncCheck() == True:
+            nameInc = self.updateStartInput()
+        else:
+            nameInc = ''
+
+        if self.setStepCheck() == True:
+            nameStep = self.updateStepInput()
+        else:
+            nameStep = 1
+
+        if self.setPaddingCheck() == True:
+            namePad = self.updatePaddingInput()
+        else:
+            namePad = 0
+
+        selectionList = self.funcSort(self.selectionMethod, 1)
         
-        def runRenameText(op=0, cl=[]):
-            operationCount = op
-            #Pre/Suffix
-            if self.setPrefixCheck() == True:
-                namePrefix = self.updatePrefixInput()
+        trueNameList = []
+        for i in selectionList:
+            #Base name
+            if self.setBaseCheck() == True:
+                nameBase = self.updateBaseInput()
             else:
-                namePrefix = ''
-
-            if self.setSuffixCheck() == True:
-                nameSuffix = self.updateSuffixInput()
+                if '|' in i: #Separate duplicate from parents
+                    nameBase = i.split('|')[-1]
+                else:
+                    nameBase = i
+                nameBaseRF = nameBase[repF::]
+                nameBaseRF = nameBaseRF[::-1]
+                nameBaseRL = nameBaseRF[repL::]
+                nameBase = nameBaseRL[::-1]
+            
+            fullPath = cmds.listRelatives(i, f = True)
+            
+            if str(fullPath) == 'None':
+                parent = cmds.listRelatives(i, p = True, f = True)
+                fullPath = cmds.listRelatives(parent, f = True)
+                fullPath = fullPath[0].split('|')
             else:
-                nameSuffix = ''
-
-            #Replace First/Last
-            if self.setReplaceFirstCheck() == True:
-                repF = self.updateReplaceFirstInput()
-            else:
-                repF = 0
-
-            if self.setReplaceLastCheck() == True:
-                repL = self.updateReplaceLastInput()
-            else:
-                repL = 0
-
-            #Increment
+                fullPath = fullPath[0].split('|')[:-1]
+            
+            depth = len(fullPath)
+            trueNameList = trueNameList + [(i, nameBase, nameInc, depth)]
+            if nameInc != '':
+                nameInc += nameStep
+        
+        # Sorting list by path depth: We don't want our renaming reference to be changed mid-operation,
+        # as it would cause problems down the hierarchy when renaming other objects
+        depthNameList = sorted(trueNameList, key=lambda tup: tup[3], reverse = 1)
+        print(depthNameList)
+        for i in depthNameList:
+            a, b, c, d = i
+            
             if self.setIncCheck() == True:
-                nameInc = self.updateStartInput()
-            else:
-                nameInc = ''
-
-            if self.setStepCheck() == True:
-                nameStep = self.updateStepInput()
-            else:
-                nameStep = 1
-
-            if self.setPaddingCheck() == True:
-                namePad = self.updatePaddingInput()
-            else:
-                namePad = 0
-
-            selectionList = self.funcSort(self.selectionMethod, 1)
-            completedList = cl
-            if len(cl) > 0:
-                for i in completedList:
-                    selectionList.remove(i)
-            
-            trueNameList = []
-            for i in selectionList:
-                #Base name
-                if self.setBaseCheck() == True:
-                    nameBase = self.updateBaseInput()
+                if self.setBaseCheck() == False and self.setSuffixCheck() == False:
+                    newName = str(namePrefix) + str(b) + str(nameSuffix)
                 else:
-                    if '|' in i: #Separate duplicate from parents
-                        nameBase = i.split('|')[-1]
-                    else:
-                        nameBase = i
-                    nameBaseRF = nameBase[repF::]
-                    nameBaseRF = nameBaseRF[::-1]
-                    nameBaseRL = nameBaseRF[repL::]
-                    nameBase = nameBaseRL[::-1]
-                #New name
-                if self.setIncCheck() == True:
-                    if self.setBaseCheck() == False and self.setSuffixCheck() == False:
-                        newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
-                    else:
-                        newName = str(namePrefix) + str(nameBase) + str(self.zeroPad(nameInc, namePad)) + str(nameSuffix)
-                        nameInc += nameStep
-                else:
-                    newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
-                #Path depth
-                fullPath = cmds.listRelatives(i, f = True)
-                depth = len(fullPath.split('|'))
-
-                #Compile to trueNameList
-                trueNameList = trueNameList + [(i, newName, depth)]
+                    newName = str(namePrefix) + str(b) + str(self.zeroPad(c, namePad)) + str(nameSuffix)
+            else:
+                newName = str(namePrefix) + str(b) + str(nameSuffix)
+            print(a)
+            cmds.rename(a, newName)
+            operationCount += 1
             
-            
-            #for i in selectionList:
-            #    try:
-            #        if self.setBaseCheck() == True:
-            #            nameBase = self.updateBaseInput()
-            #        else:
-            #            if '|' in i: #Separate duplicate from parents
-            #                nameBase = i.split('|')[-1]
-            #            else:
-            #                nameBase = i
-            #            nameBaseRF = nameBase[repF::]
-            #            nameBaseRF = nameBaseRF[::-1]
-            #            nameBaseRL = nameBaseRF[repL::]
-            #            nameBase = nameBaseRL[::-1]
-            #
-            #        if self.setIncCheck() == True:
-            #            if self.setBaseCheck() == False and self.setSuffixCheck() == False:
-            #                newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
-            #            else:
-            #                newName = str(namePrefix) + str(nameBase) + str(self.zeroPad(nameInc, namePad)) + str(nameSuffix)
-            #                nameInc += nameStep
-            #        else:
-            #            newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
-            #        
-            #        operationCount += 1
-            #        cmds.rename(i, newName)
-            #        completedList = completedList + [newName]
-            #    except RuntimeError:
-            #        runRenameText(operationCount, completedList)
-                
-            #return operationCount
-        
-        #operationCount = runRenameText()
-        #        
-        #if operationCount > 0:
-        #    print("Renamed " + str(operationCount) + " object(s).")
+        if operationCount > 0:
+            print("Renamed " + str(operationCount) + " object(s).")
     
     #-----Quick Suffix-----#
     def addGrp(self, *args):
