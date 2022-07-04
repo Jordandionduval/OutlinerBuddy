@@ -246,19 +246,49 @@ class buddyOutl_Window(object):
         z = '0' * y + str(num)
         return z
     
-    def quickAdd(self, x, isPrefix, separator='_'):
-        operationCount = 0
-        for i in self.funcSort(self.selectionMethod, 1):
-            oldName = i.split('|')[-1]
-            if isPrefix == True:
-                newName = x + separator + oldName
+    def bottomTop_2t(self, selectionList):
+        trueNameList = []
+        for i in selectionList:
+            #Path depth
+            fullPath = cmds.listRelatives(i, f = True)
+            
+            if str(fullPath) == 'None':
+                parent = cmds.listRelatives(i, p = True, f = True)
+                fullPath = cmds.listRelatives(parent, f = True)
+                fullPath = fullPath[0].split('|')
             else:
-                newName = oldName + separator + x
+                fullPath = fullPath[0].split('|')[:-1]
+            
+            depth = len(fullPath)
+            trueNameList = trueNameList + [(i, depth)]
+        
+        # Sorting list by path depth: We don't want our renaming reference to be changed mid-operation,
+        # as it would cause problems down the hierarchy when renaming other objects
+        depthNameList = sorted(trueNameList, key=lambda tup: tup[1], reverse = 1)
 
-            cmds.rename(i, newName)
+        return depthNameList
+
+
+    def quickAdd(self, quickName, isPrefix, separator='_'):
+        operationCount = 0
+        failureCount = 0
+        failureList = []
+        
+        selectionList = self.funcSort(self.selectionMethod, 1)
+        depthNameList = self.bottomTop_2t(selectionList) # a: object in sorted list b: depth level
+
+        for i in depthNameList:
+            a, b = i
+            oldName = a.split('|')[-1]
+            if isPrefix == True:
+                newName = quickName + separator + oldName
+            else:
+                newName = oldName + separator + quickName
+
+            cmds.rename(a, newName)
             operationCount += 1
 
-        print("Added " + x + " to " + str(operationCount) + " object(s).")
+        print("Added " + quickName + " to " + str(operationCount) + " object(s).")
     
     def updateQuickUi(self, con1, con2):
         uiQuick = [
@@ -305,50 +335,33 @@ class buddyOutl_Window(object):
         failureList = []
         
         selectionList = self.funcSort(self.selectionMethod, 1)
-        trueNameList = []
-        for i in selectionList:
-            #Path depth
-            fullPath = cmds.listRelatives(i, f = True)
-            
-            if str(fullPath) == 'None':
-                parent = cmds.listRelatives(i, p = True, f = True)
-                fullPath = cmds.listRelatives(parent, f = True)
-                fullPath = fullPath[0].split('|')
-            else:
-                fullPath = fullPath[0].split('|')[:-1]
-            
-            depth = len(fullPath)
-            trueNameList = trueNameList + [(i, target, replacement, depth)]
-        
-        # Sorting list by path depth: We don't want our renaming reference to be changed mid-operation,
-        # as it would cause problems down the hierarchy when renaming other objects
-        depthNameList = sorted(trueNameList, key=lambda tup: tup[3], reverse = 1)
+        depthNameList = self.bottomTop_2t(selectionList) # a: object in sorted list b: depth level
 
         for i in depthNameList:
-            a, b, c, d = i
+            a, b = i
             
             if self.setMatchCaseCheck() == False:
-                l = len(b)
+                l = len(target)
                 oldName = a.upper().split('|')[-1]
                 try:
-                    n = oldName.index(b.upper())
+                    n = oldName.index(target.upper())
 
                     oldName = a.split('|')[-1]
-                    newName = oldName[:n] + c + oldName[(n+l):]
+                    newName = oldName[:n] + replacement + oldName[(n+l):]
                 except:
                     oldName = a.split('|')[-1]
                     newName = oldName
             else:
                 oldName = a.split('|')[-1]
-                newName = oldName.replace(b, c)
+                newName = oldName.replace(target, replacement)
             
             cmds.rename(a, newName)
-            if b not in oldName:
-                if self.setMatchCaseCheck() == False and b.upper() in oldName.upper():
+            if target not in oldName:
+                if self.setMatchCaseCheck() == False and target.upper() in oldName.upper():
                     operationCount += 1
                 else:
                     failureCount += 1
-                    failureList += [a.split('|')[-1]]
+                    failureList += cmds.ls(a, sn = True)
             else:
                 operationCount += 1
         
@@ -614,7 +627,7 @@ class buddyOutl_Window(object):
         # Sorting list by path depth: We don't want our renaming reference to be changed mid-operation,
         # as it would cause problems down the hierarchy when renaming other objects
         depthNameList = sorted(trueNameList, key=lambda tup: tup[3], reverse = 1)
-        print(depthNameList)
+        
         for i in depthNameList:
             a, b, c, d = i
             
@@ -691,31 +704,60 @@ class buddyOutl_Window(object):
     
     #-----Remove-----#
     def removeFirst(self, *args):
-        operationCounter = 0
+        operationCount = 0
+        failureCount = 0
+        failureList = []
+
         remF = self.updateRemoveFirstInput()
+        
+        selectionList = self.funcSort(self.selectionMethod, 1)
+        depthNameList = self.bottomTop_2t(selectionList) # a: object in sorted list b: depth level
 
-        for i in self.funcSort(self.selectionMethod, 1):
-            nameShort = i.split('|')[-1]
-            nameBase = nameShort[remF:]
+        for i in depthNameList:
+            a, b = i
+            try:
+                nameShort = a.split('|')[-1]
+                nameBase = nameShort[remF:]
 
-            cmds.rename(i, nameBase)
-            operationCounter += 1
-        if operationCounter > 0:
-            print("Removed first " + str(remF) + " character(s) on " + str(operationCounter) + " object(s).")
+                cmds.rename(a, nameBase)
+                operationCount += 1
+            except RuntimeError:
+                failureCount += 1
+                failureList += cmds.ls(a, sn = True)
+                continue
+
+        if operationCount > 0:
+            print("Removed first " + str(remF) + " character(s) on " + str(operationCount) + " object(s).")
+        elif failureCount > 0:
+            print("# ValueError: Unable to remove anymore characters from the following " + str(failureCount) + " objects:\n# " + str(failureList))
     
     def removeLast(self, *args):
-        operationCounter = 0
+        operationCount = 0
+        failureCount = 0
+        failureList = []
+
         remL = self.updateRemoveLastInput()
         
-        for i in self.funcSort(self.selectionMethod, 1):
-            nameShort = i.split('|')[-1][::-1]
-            nameBaseRL = nameShort[remL:]
-            nameBase = nameBaseRL[::-1]
+        selectionList = self.funcSort(self.selectionMethod, 1)
+        depthNameList = self.bottomTop_2t(selectionList) # a: object in sorted list b: depth level
 
-            cmds.rename(i, nameBase)
-            operationCounter += 1
-        if operationCounter > 0:
-            print("Removed last " + str(remL) + " character(s) on " + str(operationCounter) + " object(s).")
+        for i in depthNameList:
+            a, b = i
+            try:
+                nameShort = a.split('|')[-1][::-1]
+                nameBaseRL = nameShort[remL:]
+                nameBase = nameBaseRL[::-1]
+
+                cmds.rename(a, nameBase)
+                operationCount += 1
+            except RuntimeError:
+                failureCount += 1
+                failureList += cmds.ls(a, sn = True)
+                continue
+        if operationCount > 0:
+            print("Removed last " + str(remL) + " character(s) on " + str(operationCount) + " object(s).")
+        elif failureCount > 0:
+            print("# ValueError: Unable to remove anymore characters from the following " + str(failureCount) + " objects:\n# " + str(failureList))
     
     def removeSelected(self, *args):
         if self.setRemovePastedCheck() == True:
