@@ -567,73 +567,72 @@ class buddyOutl_Window(object):
                 for i in completedList:
                     selectionList.remove(i)
             
+            trueNameList = []
             for i in selectionList:
-                try:
-                    if self.setBaseCheck() == True:
-                        nameBase = self.updateBaseInput()
+                #Base name
+                if self.setBaseCheck() == True:
+                    nameBase = self.updateBaseInput()
+                else:
+                    if '|' in i: #Separate duplicate from parents
+                        nameBase = i.split('|')[-1]
                     else:
-                        if '|' in i: #Separate duplicate from parents
-                            nameBase = i.split('|')[-1]
-                        else:
-                            nameBase = i
-                        nameBaseRF = nameBase[repF::]
-                        nameBaseRF = nameBaseRF[::-1]
-                        nameBaseRL = nameBaseRF[repL::]
-                        nameBase = nameBaseRL[::-1]
-
-                    if self.setIncCheck() == True:
-                        if self.setBaseCheck() == False and self.setSuffixCheck() == False:
-                            newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
-                        else:
-                            newName = str(namePrefix) + str(nameBase) + str(self.zeroPad(nameInc, namePad)) + str(nameSuffix)
-                            nameInc += nameStep
-                    else:
+                        nameBase = i
+                    nameBaseRF = nameBase[repF::]
+                    nameBaseRF = nameBaseRF[::-1]
+                    nameBaseRL = nameBaseRF[repL::]
+                    nameBase = nameBaseRL[::-1]
+                #New name
+                if self.setIncCheck() == True:
+                    if self.setBaseCheck() == False and self.setSuffixCheck() == False:
                         newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
-                    
-                    operationCount += 1
-                    cmds.rename(i, newName)
-                    completedList = completedList + [newName]
-                except RuntimeError:
-                    runRenameText(operationCount, completedList)
-                
-            return operationCount
-        
-        operationCount = runRenameText()
+                    else:
+                        newName = str(namePrefix) + str(nameBase) + str(self.zeroPad(nameInc, namePad)) + str(nameSuffix)
+                        nameInc += nameStep
+                else:
+                    newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
+                #Path depth
+                fullPath = cmds.listRelatives(i, f = True)
+                depth = len(fullPath.split('|'))
 
-        #if '|' in i:
-        #    namePath = cmds.listRelatives(f=1, s=0)
-        #    namePath=''.join(namePath)
-        #    namePath=namePath.split('|')
-        #    namePathLength = len(namePath)
-        #    namePath = "|".join(namePath[:namePathLength-1])
-        #    k = '|' + i
-        #    #currentName = cmds.ls(i, long=True)
-        #    #currentName = currentName[0]
-        #    #iL = len(i)
-        #    #pL = len(currentName)
-        #    #fL = pL-iL
-        #    #target = currentName[:fL]
-        #    endName = namePath + '|' + newName
-        #    cmds.rename(k, endName)
-        #else:
-        #    cmds.rename(i, newName)
-        #try:
-        #    cmds.rename(i, newName)
-        #except RuntimeError:
-        #    try:
-        #        currentName = cmds.listRelatives(fullPath=True)
-        #        namePath = currentName.split('|')
-        #        l=len(namePath)
-        #        l-=1
-        #        currentName=namePath[:l].join('|')
-        #
-        #        endName = currentName + newName
-        #        cmds.rename(i, endName)
-        #    except:
-        #        continue
+                #Compile to trueNameList
+                trueNameList = trueNameList + [(i, newName, depth)]
+            
+            
+            #for i in selectionList:
+            #    try:
+            #        if self.setBaseCheck() == True:
+            #            nameBase = self.updateBaseInput()
+            #        else:
+            #            if '|' in i: #Separate duplicate from parents
+            #                nameBase = i.split('|')[-1]
+            #            else:
+            #                nameBase = i
+            #            nameBaseRF = nameBase[repF::]
+            #            nameBaseRF = nameBaseRF[::-1]
+            #            nameBaseRL = nameBaseRF[repL::]
+            #            nameBase = nameBaseRL[::-1]
+            #
+            #        if self.setIncCheck() == True:
+            #            if self.setBaseCheck() == False and self.setSuffixCheck() == False:
+            #                newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
+            #            else:
+            #                newName = str(namePrefix) + str(nameBase) + str(self.zeroPad(nameInc, namePad)) + str(nameSuffix)
+            #                nameInc += nameStep
+            #        else:
+            #            newName = str(namePrefix) + str(nameBase) + str(nameSuffix)
+            #        
+            #        operationCount += 1
+            #        cmds.rename(i, newName)
+            #        completedList = completedList + [newName]
+            #    except RuntimeError:
+            #        runRenameText(operationCount, completedList)
                 
-        if operationCount > 0:
-            print("Renamed " + str(operationCount) + " object(s).")
+            #return operationCount
+        
+        #operationCount = runRenameText()
+        #        
+        #if operationCount > 0:
+        #    print("Renamed " + str(operationCount) + " object(s).")
     
     #-----Quick Suffix-----#
     def addGrp(self, *args):
