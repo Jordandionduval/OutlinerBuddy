@@ -304,34 +304,56 @@ class buddyOutl_Window(object):
         failureCount = 0
         failureList = []
         
-        for i in self.funcSort(self.selectionMethod, 1):
-            if self.setMatchCaseCheck() == False:
-                l = len(target)
-                oldName = i.upper().split('|')[-1]
-                try:
-                    n = oldName.index(target.upper())
+        selectionList = self.funcSort(self.selectionMethod, 1)
+        trueNameList = []
+        for i in selectionList:
+            #Path depth
+            fullPath = cmds.listRelatives(i, f = True)
+            
+            if str(fullPath) == 'None':
+                parent = cmds.listRelatives(i, p = True, f = True)
+                fullPath = cmds.listRelatives(parent, f = True)
+                fullPath = fullPath[0].split('|')
+            else:
+                fullPath = fullPath[0].split('|')[:-1]
+            
+            depth = len(fullPath)
+            trueNameList = trueNameList + [(i, target, replacement, depth)]
+        
+        # Sorting list by path depth: We don't want our renaming reference to be changed mid-operation,
+        # as it would cause problems down the hierarchy when renaming other objects
+        depthNameList = sorted(trueNameList, key=lambda tup: tup[3], reverse = 1)
 
-                    oldName = i.split('|')[-1]
-                    newName = oldName[:n] + replacement + oldName[(n+l):]
+        for i in depthNameList:
+            a, b, c, d = i
+            
+            if self.setMatchCaseCheck() == False:
+                l = len(b)
+                oldName = a.upper().split('|')[-1]
+                try:
+                    n = oldName.index(b.upper())
+
+                    oldName = a.split('|')[-1]
+                    newName = oldName[:n] + c + oldName[(n+l):]
                 except:
-                    oldName = i.split('|')[-1]
+                    oldName = a.split('|')[-1]
                     newName = oldName
             else:
-                oldName = i.split('|')[-1]
-                newName = oldName.replace(target, replacement)
+                oldName = a.split('|')[-1]
+                newName = oldName.replace(b, c)
             
-            cmds.rename(i, newName)
-            if target not in oldName:
-                if self.setMatchCaseCheck() == False and target.upper() in oldName.upper():
+            cmds.rename(a, newName)
+            if b not in oldName:
+                if self.setMatchCaseCheck() == False and b.upper() in oldName.upper():
                     operationCount += 1
                 else:
                     failureCount += 1
-                    failureList += [i.split('|')[-1]]
+                    failureList += [a.split('|')[-1]]
             else:
                 operationCount += 1
         
         if failureCount > 0:
-            print("//ValueError: Could not find " + str(failureCount) + " object(s) in the current list.\n//" + str(failureList) + "\n//Verify the queried words and selected objects are correct.\n//ValueError: Could not find " + str(failureCount) + " object(s) in the current list.")
+            print("# ValueError: Could not find " + str(failureCount) + " object(s) in the current list.\n# " + str(failureList) + "\n# Verify the queried words and selected objects are correct.\n# ValueError: Could not find " + str(failureCount) + " object(s) in the current list.")
         
         if operationCount > 0:
             if replacement == '':
@@ -516,7 +538,6 @@ class buddyOutl_Window(object):
         replaceIn = self.updateReplaceInput()
 
         self.fastReplace(searchIn, replaceIn)
-
     
     #-----Rename-----#
     def renameText(self, *args):
@@ -604,7 +625,7 @@ class buddyOutl_Window(object):
                     newName = str(namePrefix) + str(b) + str(self.zeroPad(c, namePad)) + str(nameSuffix)
             else:
                 newName = str(namePrefix) + str(b) + str(nameSuffix)
-            print(a)
+            
             cmds.rename(a, newName)
             operationCount += 1
             
