@@ -1,7 +1,11 @@
 # OutlinerBuddy
 A little tool used with Maya to replace the default renaming tool.
 
-![OB_screenshot](https://user-images.githubusercontent.com/84198946/174913818-10bb6eea-bc65-4ef8-9abc-cc8830785ec3.PNG)
+![image](https://user-images.githubusercontent.com/98228345/177248385-6c9e3d52-a63a-4e23-85bd-9e082ec9a1a5.png)
+
+###### Video showcase: https://vimeo.com/726886513
+
+---
 
 I made this tool as a way to practice python. The goal when creating this tool was to replace Maya's old renaming tool for something a little more versatile and powerful.
 
