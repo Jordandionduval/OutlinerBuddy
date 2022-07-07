@@ -23,6 +23,7 @@ OB.UI()
 ---
 
 ### Known Issues
-- Renaming command breaks when trying to rename objects that have duplicate names down in the hierarchy or when renaming would create duplicate names in the hierarchy.
-- The 'All' selection method sends back an error message.
-- When using incrementation in the 'rename' section of the tool, the first number happens to be wrong sometimes. Pressing the rename button again after that solves the issue.
+- The 'All' selection method sends back an error message
+- Object names in Maya cannot start with numbers
+  - Any operation that would leave the object's first character as a number will go through, but the numbers will instantly get removed
+- When using incrementation in the 'rename' section of the tool, the first number happens to be wrong sometimes. Pressing the rename button again after that solves the issue
