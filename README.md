@@ -24,6 +24,7 @@ OB.UI()
 
 ### Known Issues
 - The 'All' selection method sends back an error message
+- Attempting to remove the last character on a duplicate name is impossible, since Maya will keep adding a number at the end
 - Object names in Maya cannot start with numbers
   - Any operation that would leave the object's first character as a number will go through, but the numbers will instantly get removed
 - When using incrementation in the 'rename' section of the tool, the first number happens to be wrong sometimes. Pressing the rename button again after that solves the issue
