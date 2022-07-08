@@ -333,8 +333,8 @@ class buddyOutl_Window(object):
     def fastReplace(self, target, replacement=''):
         operationCount = 0
         failureCount = 0
-        illegalCount = 0
         failureList = []
+        illegalCount = 0
         illegalList = []
         
         selectionList = self.funcSort(self.selectionMethod, 1)
@@ -358,9 +358,12 @@ class buddyOutl_Window(object):
                 oldName = a.split('|')[-1]
                 newName = oldName.replace(target, replacement)
             
-            firstChar = newName[0]
-            if firstChar.isalpha() == False or firstChar != '_':
-                illegalCount += 1
+            if newName[0].isalpha() == False:
+                if newName[0] != '_':
+                    True
+                else:
+                    illegalCount += 1
+                    continue
 
             cmds.rename(a, newName)
             if target not in oldName:
@@ -723,7 +726,10 @@ class buddyOutl_Window(object):
         operationCount = 0
         failureCount = 0
         failureList = []
-
+        illegalCount = 0
+        illegalList = []
+        fixCount = 0
+        
         if remOrder == 'first':
             remF = self.updateRemoveFirstInput()
             remL = 0
@@ -732,20 +738,47 @@ class buddyOutl_Window(object):
             remL = self.updateRemoveLastInput()
         else:
             raise ValueError("The argument used in self.quickRemove() should either be \"first\" or \"last\".")
-
         removeAmount = remF + remL
+        
         selectionList = self.funcSort(self.selectionMethod, 1)
         depthNameList = self.bottomTop_2t(selectionList) # a: object in sorted list b: depth level
 
         for i in depthNameList:
             a, b = i
+            name = a
+            isFix = False
+
+            excText = 'char__'
+            excLength = len(excText)
+            if excText in a[:excLength]:
+                name = a[excLength:]
+                isFix = False
+            
             try:
-                nameShort = a.split('|')[-1]
+                nameShort = name.split('|')[-1]
                 nameBase = nameShort[remF:]
                 nameBase = nameBase[::-1]
                 nameBase = nameBase[remL::]
                 nameBase = nameBase[::-1]
-
+                try:
+                    if nameBase[0].isalpha() == False:
+                        if  nameBase[0] == '_':
+                            if isFix == False:
+                                isFix = True
+                                fixCount += 1
+                        else:
+                            nameBase = excText + nameBase
+                            isFix = False
+                            illegalCount += 1
+                            illegalList += cmds.ls(a, sn = True)
+                    else:
+                        if isFix == False:
+                            isFix = True
+                            fixCount += 1
+                except IndexError:
+                    failureCount += 1
+                    failureList += cmds.ls(a, sn = True)
+                    continue
                 cmds.rename(a, nameBase)
                 operationCount += 1
             except RuntimeError:
@@ -755,10 +788,18 @@ class buddyOutl_Window(object):
         
         if operationCount > 0:
             print("Removed " + remOrder + " " + str(removeAmount) + " character(s) on " + str(operationCount) + " object(s)")
-        elif failureCount > 0:
-            print("# ValueError: Unable to remove anymore characters from " + str(failureCount) + " object(s)" + 
-            "\n# Failed operations: " + str(failureList) +
-            "\n# ValueError: Unable to remove anymore characters from " + str(failureCount) + " object(s)")
+        if illegalCount > 0:
+            print("# Warning\n# Modified operations: " + str(illegalList))
+            raise Warning("Added \"" + excText + "\" in front of" + str(illegalCount) + " illegal object name(s)")
+            #print("# Warning: Adding \"" + excText + "\" in front of" + str(illegalCount) + " illegal object name(s)" + 
+            #"\n# Names can only start with alphabetical characters (A-Z) or with underscores ( _ )" +
+            #"\n# Object list: " + str(illegalList) +
+            #"\n# Warning: Adding \"" + excText + "\" in front of" + str(illegalCount) + " illegal object name(s)")
+        if fixCount > 0:
+            print("Removed \"" + excText + "\" from " + fixCount + " object(s) (Previously had an illegal name)")
+        if failureCount > 0:
+            print("# ValueError\n# Failed operations: " + str(failureList))
+            raise ValueError("Unable to remove anymore characters from " + str(failureCount) + " object(s)")
     
     def removeFirst(self, *args):
         self.quickRemove('first')
