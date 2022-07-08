@@ -386,8 +386,12 @@ class buddyOutl_Window(object):
             print("# ValueError\n# Failed operations (" + str(illegalCount) + "): " + str(failureList))
             raise ValueError("Resulting object names would start with an illegal character")
         if failureCount > 0:
-            print("# ValueError\n# Failed operations (" + str(failureCount) + "): " + str(failureList))
-            raise ValueError("Could not find search name in target objects")
+            if operationCount > 0:
+                print("# Warning\n# Failed operations (" + str(failureCount) + "): " + str(failureList))
+                raise Warning("Could not find search name from certain objects in current selection")
+            else:
+                print("# ValueError\n# Failed operations (" + str(failureCount) + "): " + str(failureList))
+                raise ValueError("Could not find search name in current selection")
     
     def listSl(self):
         res = cmds.ls(sl=True)
@@ -803,10 +807,6 @@ class buddyOutl_Window(object):
         if illegalCount > 0:
             print("# Warning\n# Modified operations(" + str(illegalCount) + "): " + str(illegalList))
             raise Warning("Added \"" + excText + "\" in front of illegal object names")
-            #print("# Warning: Adding \"" + excText + "\" in front of" + str(illegalCount) + " illegal object name(s)" + 
-            #"\n# Names can only start with alphabetical characters (A-Z) or with underscores ( _ )" +
-            #"\n# Object list: " + str(illegalList) +
-            #"\n# Warning: Adding \"" + excText + "\" in front of" + str(illegalCount) + " illegal object name(s)")
         if fixCount > 0:
             print("Removed \"" + excText + "\" from " + fixCount + " object(s) (Object(s) previously had illegal names)")
         if failureCount > 0:
