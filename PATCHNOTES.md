@@ -1,4 +1,20 @@
 ### Patch notes
+###### v1.1.1
+Bugfix on objects with no parents creating errors and added more errors and warnings
+- Simplified removeFirst() and removeLast() code block (both commands now rely on quickRemove())
+- Fixed bug that stopped some commands from working when executed on objects with no parents
+- Re-structured some code around errors and exceptions
+- Fixed success message counting failed attempts as successes
+- Added error messages to the main renaming/replacing functions to stop objects with illegal names from occurring
+    - Replace errors
+        - Value error for illegal resulting names
+        - Warning/Value error for partial/complete failure from finding search term in current selection
+    - Rename errors
+        - Value error if prefix starts with an illegal character
+    - Remove errors
+        - Value error when no more characters can be removed
+        - Warning that adds "char__" in front of object names if the resulting name is illegal
+
 ###### v1.1.0
 Restructuring the general selection method used to rename objects.
 Objects are still numbered in the selection order, but internally are renamed from the furthest child first going up the hierarchy.
