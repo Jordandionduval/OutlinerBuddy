@@ -727,9 +727,11 @@ class buddyOutl_Window(object):
         if remOrder == 'first':
             remF = self.updateRemoveFirstInput()
             remL = 0
-        else:
+        elif remOrder == 'last':
             remF = 0
             remL = self.updateRemoveLastInput()
+        else:
+            raise ValueError("The argument used in self.quickRemove() should either be \"first\" or \"last\".")
 
         removeAmount = remF + remL
         selectionList = self.funcSort(self.selectionMethod, 1)
@@ -750,27 +752,19 @@ class buddyOutl_Window(object):
                 failureCount += 1
                 failureList += cmds.ls(a, sn = True)
                 continue
-        return operationCount, failureCount, failureList, removeAmount
-    
-    def removeFirst(self, *args):
-        operationCount, failureCount, failureList, removeAmount = self.quickRemove('first')
         
         if operationCount > 0:
-            print("Removed first " + str(removeAmount) + " character(s) on " + str(operationCount) + " object(s)")
+            print("Removed " + remOrder + " " + str(removeAmount) + " character(s) on " + str(operationCount) + " object(s)")
         elif failureCount > 0:
             print("# ValueError: Unable to remove anymore characters from " + str(failureCount) + " object(s)" + 
             "\n# Failed operations: " + str(failureList) +
-            "# ValueError: Unable to remove anymore characters from " + str(failureCount) + " object(s)")
+            "\n# ValueError: Unable to remove anymore characters from " + str(failureCount) + " object(s)")
+    
+    def removeFirst(self, *args):
+        self.quickRemove('first')
     
     def removeLast(self, *args):
-        operationCount, failureCount, failureList, removeAmount = self.quickRemove('last')
-
-        if operationCount > 0:
-            print("Removed last " + str(removeAmount) + " character(s) on " + str(operationCount) + " object(s)")
-        elif failureCount > 0:
-            print("# ValueError: Unable to remove anymore characters from " + str(failureCount) + " object(s)" + 
-            "\n# Failed operations: " + str(failureList) +
-            "# ValueError: Unable to remove anymore characters from " + str(failureCount) + " object(s)")
+        self.quickRemove('last')
     
     def removeSelected(self, *args):
         if self.setRemovePastedCheck() == True:
