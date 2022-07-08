@@ -229,13 +229,13 @@ class buddyOutl_Window(object):
         cmds.showWindow()
     #----------------------------------------------Functions----------------------------------------------#
     #-----General-----#
-    def funcSort(self, func, x, y='a'):
-        o = func()
-        z = o[x]
-        if y == 'a':
-            res = z
+    def funcSort(self, func, x, y='notNested'):
+        resList = func()
+        sortedList = resList[x]
+        if type(y) == int:
+            res = sortedList[y]
         else:
-            res = z[y]
+            res = sortedList
         return res
     
     def zeroPad(self, num, pad):
@@ -249,14 +249,15 @@ class buddyOutl_Window(object):
     def bottomTop_2t(self, selectionList):
         trueNameList = []
         for i in selectionList:
-            #Path depth
-            fullPath = cmds.listRelatives(i, f = True)
-            
-            if str(fullPath) == 'None':
-                parent = cmds.listRelatives(i, p = True, f = True)
-                fullPath = cmds.listRelatives(parent, f = True)
-                fullPath = fullPath[0].split('|')
+            if cmds.listRelatives(i, f = True) == None:
+                try:
+                    parent = cmds.listRelatives(i, p = True, f = True)
+                    fullPath = cmds.listRelatives(parent, f = True)
+                    fullPath = fullPath[0].split('|')
+                except TypeError:
+                    fullPath = i
             else:
+                fullPath = cmds.listRelatives(i, f = True)
                 fullPath = fullPath[0].split('|')[:-1]
             
             depth = len(fullPath)
@@ -332,7 +333,9 @@ class buddyOutl_Window(object):
     def fastReplace(self, target, replacement=''):
         operationCount = 0
         failureCount = 0
+        illegalCount = 0
         failureList = []
+        illegalList = []
         
         selectionList = self.funcSort(self.selectionMethod, 1)
         depthNameList = self.bottomTop_2t(selectionList) # a: object in sorted list b: depth level
@@ -355,6 +358,10 @@ class buddyOutl_Window(object):
                 oldName = a.split('|')[-1]
                 newName = oldName.replace(target, replacement)
             
+            firstChar = newName[0]
+            if firstChar.isalpha() == False or firstChar != '_':
+                illegalCount += 1
+
             cmds.rename(a, newName)
             if target not in oldName:
                 if self.setMatchCaseCheck() == False and target.upper() in oldName.upper():
@@ -366,13 +373,22 @@ class buddyOutl_Window(object):
                 operationCount += 1
         
         if failureCount > 0:
-            print("# ValueError: Could not find " + str(failureCount) + " object(s) in the current list.\n# " + str(failureList) + "\n# Verify the queried words and selected objects are correct.\n# ValueError: Could not find " + str(failureCount) + " object(s) in the current list.")
+            print("# ValueError: Could not find \"" + target + "\" in " + str(failureCount) + " object(s) in the current list" + 
+            "\n# Failed operations: " + str(failureList) + 
+            "\n# Verify the queried words and selected objects are correct" + 
+            "\n# ValueError: Could not find " + str(failureCount) + " object(s) in the current list")
+
+        if illegalCount > 0:
+            print("# ValueError: " + str(illegalCount) + " object(s) have illegal names" +
+            "\n# Illegal names: " + str(illegalList) + 
+            "\n# Make sure the resulting name starts with an alphabetical character ( A-Z ) or with an underscore ( _ )" + 
+            "# ValueError: " + str(illegalCount) + " object(s) have illegal names")
         
         if operationCount > 0:
             if replacement == '':
-                print("Removed \"" + target + "\" from " + str(operationCount) + " object(s).")
+                print("Removed \"" + target + "\" from " + str(operationCount) + " object(s)")
             else:
-                print("Replaced \"" + target + "\" with \"" + replacement + "\" in " + str(operationCount) + " object(s).")
+                print("Replaced \"" + target + "\" with \"" + replacement + "\" in " + str(operationCount) + " object(s)")
     
     def listSl(self):
         res = cmds.ls(sl=True)
@@ -612,7 +628,7 @@ class buddyOutl_Window(object):
             
             fullPath = cmds.listRelatives(i, f = True)
             
-            if str(fullPath) == 'None':
+            if fullPath == None:
                 parent = cmds.listRelatives(i, p = True, f = True)
                 fullPath = cmds.listRelatives(parent, f = True)
                 fullPath = fullPath[0].split('|')
@@ -703,13 +719,19 @@ class buddyOutl_Window(object):
         self.quickAdd(x, isPrefix)
     
     #-----Remove-----#
-    def removeFirst(self, *args):
+    def quickRemove(self, remOrder='last'):
         operationCount = 0
         failureCount = 0
         failureList = []
 
-        remF = self.updateRemoveFirstInput()
-        
+        if remOrder == 'first':
+            remF = self.updateRemoveFirstInput()
+            remL = 0
+        else:
+            remF = 0
+            remL = self.updateRemoveLastInput()
+
+        removeAmount = remF + remL
         selectionList = self.funcSort(self.selectionMethod, 1)
         depthNameList = self.bottomTop_2t(selectionList) # a: object in sorted list b: depth level
 
@@ -718,6 +740,9 @@ class buddyOutl_Window(object):
             try:
                 nameShort = a.split('|')[-1]
                 nameBase = nameShort[remF:]
+                nameBase = nameBase[::-1]
+                nameBase = nameBase[remL::]
+                nameBase = nameBase[::-1]
 
                 cmds.rename(a, nameBase)
                 operationCount += 1
@@ -725,39 +750,27 @@ class buddyOutl_Window(object):
                 failureCount += 1
                 failureList += cmds.ls(a, sn = True)
                 continue
-
+        return operationCount, failureCount, failureList, removeAmount
+    
+    def removeFirst(self, *args):
+        operationCount, failureCount, failureList, removeAmount = self.quickRemove('first')
+        
         if operationCount > 0:
-            print("Removed first " + str(remF) + " character(s) on " + str(operationCount) + " object(s).")
+            print("Removed first " + str(removeAmount) + " character(s) on " + str(operationCount) + " object(s)")
         elif failureCount > 0:
-            print("# ValueError: Unable to remove anymore characters from the following " + str(failureCount) + " objects:\n# " + str(failureList))
+            print("# ValueError: Unable to remove anymore characters from " + str(failureCount) + " object(s)" + 
+            "\n# Failed operations: " + str(failureList) +
+            "# ValueError: Unable to remove anymore characters from " + str(failureCount) + " object(s)")
     
     def removeLast(self, *args):
-        operationCount = 0
-        failureCount = 0
-        failureList = []
+        operationCount, failureCount, failureList, removeAmount = self.quickRemove('last')
 
-        remL = self.updateRemoveLastInput()
-        
-        selectionList = self.funcSort(self.selectionMethod, 1)
-        depthNameList = self.bottomTop_2t(selectionList) # a: object in sorted list b: depth level
-
-        for i in depthNameList:
-            a, b = i
-            try:
-                nameShort = a.split('|')[-1][::-1]
-                nameBaseRL = nameShort[remL:]
-                nameBase = nameBaseRL[::-1]
-
-                cmds.rename(a, nameBase)
-                operationCount += 1
-            except RuntimeError:
-                failureCount += 1
-                failureList += cmds.ls(a, sn = True)
-                continue
         if operationCount > 0:
-            print("Removed last " + str(remL) + " character(s) on " + str(operationCount) + " object(s).")
+            print("Removed last " + str(removeAmount) + " character(s) on " + str(operationCount) + " object(s)")
         elif failureCount > 0:
-            print("# ValueError: Unable to remove anymore characters from the following " + str(failureCount) + " objects:\n# " + str(failureList))
+            print("# ValueError: Unable to remove anymore characters from " + str(failureCount) + " object(s)" + 
+            "\n# Failed operations: " + str(failureList) +
+            "# ValueError: Unable to remove anymore characters from " + str(failureCount) + " object(s)")
     
     def removeSelected(self, *args):
         if self.setRemovePastedCheck() == True:
@@ -766,8 +779,8 @@ class buddyOutl_Window(object):
             self.fastReplace(self.updateRemoveSpecialInput())
     
     def removeAll(self, *args):
-        print("Removed first " + str(self.updateRemoveFirstInput()) + " character(s)." +
-              "\nRemoved last " + str(self.updateRemoveLastInput()) + " character(s).")
+        print("Removed first " + str(self.updateRemoveFirstInput()) + " character(s)" +
+              "\nRemoved last " + str(self.updateRemoveLastInput()) + " character(s)")
         self.removeSelected()
         self.removeFirst()
         self.removeLast()
