@@ -272,8 +272,6 @@ class buddyOutl_Window(object):
 
     def quickAdd(self, quickName, isPrefix, separator='_'):
         operationCount = 0
-        failureCount = 0
-        failureList = []
         
         selectionList = self.funcSort(self.selectionMethod, 1)
         depthNameList = self.bottomTop_2t(selectionList) # a: object in sorted list b: depth level
@@ -285,11 +283,12 @@ class buddyOutl_Window(object):
                 newName = quickName + separator + oldName
             else:
                 newName = oldName + separator + quickName
-
+            
             cmds.rename(a, newName)
             operationCount += 1
-
-        print("Added " + quickName + " to " + str(operationCount) + " object(s).")
+        
+        if operationCount > 0:
+            print("Added " + quickName + " to " + str(operationCount) + " object(s).")
     
     def updateQuickUi(self, con1, con2):
         uiQuick = [
@@ -363,6 +362,7 @@ class buddyOutl_Window(object):
                     True
                 else:
                     illegalCount += 1
+                    illegalList += cmds.ls(a, sn = True)
                     continue
 
             cmds.rename(a, newName)
@@ -375,23 +375,17 @@ class buddyOutl_Window(object):
             else:
                 operationCount += 1
         
-        if failureCount > 0:
-            print("# ValueError: Could not find \"" + target + "\" in " + str(failureCount) + " object(s) in the current list" + 
-            "\n# Failed operations: " + str(failureList) + 
-            "\n# Verify the queried words and selected objects are correct" + 
-            "\n# ValueError: Could not find " + str(failureCount) + " object(s) in the current list")
-
-        if illegalCount > 0:
-            print("# ValueError: " + str(illegalCount) + " object(s) have illegal names" +
-            "\n# Illegal names: " + str(illegalList) + 
-            "\n# Make sure the resulting name starts with an alphabetical character ( A-Z ) or with an underscore ( _ )" + 
-            "# ValueError: " + str(illegalCount) + " object(s) have illegal names")
-        
         if operationCount > 0:
             if replacement == '':
                 print("Removed \"" + target + "\" from " + str(operationCount) + " object(s)")
             else:
                 print("Replaced \"" + target + "\" with \"" + replacement + "\" in " + str(operationCount) + " object(s)")
+        if illegalCount > 0:
+            print("# ValueError\n# Failed operations (" + str(illegalCount) + "): " + str(failureList))
+            raise ValueError("Resulting object names would start with an illegal character")
+        if failureCount > 0:
+            print("# ValueError\n# Failed operations (" + str(failureCount) + "): " + str(failureList))
+            raise ValueError("Could not find search name in target objects")
     
     def listSl(self):
         res = cmds.ls(sl=True)
@@ -616,6 +610,12 @@ class buddyOutl_Window(object):
         
         trueNameList = []
         for i in selectionList:
+            #Checking for illegal names
+            excText = 'char__'
+            excLength = len(excText)
+            if excText in i[:excLength]:
+                name = i[excLength:]
+            
             #Base name
             if self.setBaseCheck() == True:
                 nameBase = self.updateBaseInput()
@@ -629,13 +629,15 @@ class buddyOutl_Window(object):
                 nameBaseRL = nameBaseRF[repL::]
                 nameBase = nameBaseRL[::-1]
             
-            fullPath = cmds.listRelatives(i, f = True)
-            
-            if fullPath == None:
-                parent = cmds.listRelatives(i, p = True, f = True)
-                fullPath = cmds.listRelatives(parent, f = True)
-                fullPath = fullPath[0].split('|')
+            if cmds.listRelatives(i, f = True) == None:
+                try:
+                    parent = cmds.listRelatives(i, p = True, f = True)
+                    fullPath = cmds.listRelatives(parent, f = True)
+                    fullPath = fullPath[0].split('|')
+                except TypeError:
+                    fullPath = i
             else:
+                fullPath = cmds.listRelatives(i, f = True)
                 fullPath = fullPath[0].split('|')[:-1]
             
             depth = len(fullPath)
@@ -648,7 +650,7 @@ class buddyOutl_Window(object):
         depthNameList = sorted(trueNameList, key=lambda tup: tup[3], reverse = 1)
         
         for i in depthNameList:
-            a, b, c, d = i
+            a, b, c, d = i #a: i, b: nameBase, c: nameInc, d: depth
             
             if self.setIncCheck() == True:
                 if self.setBaseCheck() == False and self.setSuffixCheck() == False:
@@ -658,8 +660,15 @@ class buddyOutl_Window(object):
             else:
                 newName = str(namePrefix) + str(b) + str(nameSuffix)
             
-            cmds.rename(a, newName)
-            operationCount += 1
+            if newName[0].isalpha() == False:
+                    if  newName[0] == '_':
+                        cmds.rename(a, newName)
+                        operationCount += 1
+                    else:
+                        raise ValueError("Object names can only start with alphabetical characters (A-Z) or with underscores ( _ )")
+            else:
+                cmds.rename(a, newName)
+                operationCount += 1
             
         if operationCount > 0:
             print("Renamed " + str(operationCount) + " object(s).")
@@ -779,6 +788,7 @@ class buddyOutl_Window(object):
                     failureCount += 1
                     failureList += cmds.ls(a, sn = True)
                     continue
+                
                 cmds.rename(a, nameBase)
                 operationCount += 1
             except RuntimeError:
@@ -789,17 +799,17 @@ class buddyOutl_Window(object):
         if operationCount > 0:
             print("Removed " + remOrder + " " + str(removeAmount) + " character(s) on " + str(operationCount) + " object(s)")
         if illegalCount > 0:
-            print("# Warning\n# Modified operations: " + str(illegalList))
-            raise Warning("Added \"" + excText + "\" in front of" + str(illegalCount) + " illegal object name(s)")
+            print("# Warning\n# Modified operations(" + str(illegalCount) + "): " + str(illegalList))
+            raise Warning("Added \"" + excText + "\" in front of illegal object names")
             #print("# Warning: Adding \"" + excText + "\" in front of" + str(illegalCount) + " illegal object name(s)" + 
             #"\n# Names can only start with alphabetical characters (A-Z) or with underscores ( _ )" +
             #"\n# Object list: " + str(illegalList) +
             #"\n# Warning: Adding \"" + excText + "\" in front of" + str(illegalCount) + " illegal object name(s)")
         if fixCount > 0:
-            print("Removed \"" + excText + "\" from " + fixCount + " object(s) (Previously had an illegal name)")
+            print("Removed \"" + excText + "\" from " + fixCount + " object(s) (Object(s) previously had illegal names)")
         if failureCount > 0:
-            print("# ValueError\n# Failed operations: " + str(failureList))
-            raise ValueError("Unable to remove anymore characters from " + str(failureCount) + " object(s)")
+            print("# ValueError\n# Failed operations(" + str(failureCount) + "): " + str(failureList))
+            raise ValueError("Unable to remove anymore characters from object name")
     
     def removeFirst(self, *args):
         self.quickRemove('first')
