@@ -1,7 +1,7 @@
 #-----------------------------Tested for Maya 2022+-----------------------------#
 #
 #             jdd_outlinerBuddy.py 
-#             v1.0.1, last modified 21/06/2022
+#             v1.1.1, last modified 08/07/22
 # 
 # MIT License
 # Copyright (c) 2020 Jordan Dion-Duval
@@ -25,15 +25,17 @@
 # SOFTWARE.
 # 
 #----------------------------------INSTALLATION---------------------------------#
-# Copy the "jdd_outlinerBuddy.py" to your Maya scripts directory:
-#     MyDocuments\Maya\scripts\
-#         use this text as a python script within Maya:
+# 1. Copy the "jdd_outlinerBuddy.py" to your Maya scripts directory:
+#     > MyDocuments\Maya\scripts\
+# 2. Then, within maya, use the following text as a python script to run the tool:
+#    (without the apostrophes)
 '''
 import jdd_outlinerBuddy as OB
 OB.UI()
 '''
-# this text can be entered from the script editor and can be made into a button
-#
+# 3.(Optional) Alternatively, the text can be saved in the custom shelf using
+# maya's script editor. This makes the script a small button in your current shelf
+# so it can easily be accessed later.
 #--------------------------------------------------------------------------------#
 import maya.cmds as cmds
 
