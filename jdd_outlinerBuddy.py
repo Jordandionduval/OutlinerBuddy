@@ -406,8 +406,12 @@ class buddyOutl_Window(object):
         return res
     
     def listAll(self):
-        res = cmds.ls(dag=True, ro = False)
-
+        res = cmds.ls(dag=True)
+        illegalObjects = cmds.ls(ca=True) + cmds.ls(s = True)
+        illegalObjects = illegalObjects + cmds.listRelatives(illegalObjects, p = True)
+        for i in illegalObjects:
+            if i in res:
+                res.remove(i)
         return res
 
     #-----Update Input Queries-----#
