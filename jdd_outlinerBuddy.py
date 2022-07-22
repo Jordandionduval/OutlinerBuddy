@@ -276,17 +276,17 @@ class buddyOutl_Window(object):
         operationCount = 0
         
         selectionList = self.funcSort(self.selectionMethod, 1)
-        depthNameList = self.bottomTop_2t(selectionList) # a: object in sorted list b: depth level
+        depthNameList = self.bottomTop_2t(selectionList) 
 
         for i in depthNameList:
-            a, b = i
-            oldName = a.split('|')[-1]
+            _object, _depth = i
+            oldName = _object.split('|')[-1]
             if isPrefix == True:
                 newName = quickName + separator + oldName
             else:
                 newName = oldName + separator + quickName
             
-            cmds.rename(a, newName)
+            cmds.rename(_object, newName)
             operationCount += 1
         
         if operationCount > 0:
@@ -339,24 +339,24 @@ class buddyOutl_Window(object):
         illegalList = []
         
         selectionList = self.funcSort(self.selectionMethod, 1)
-        depthNameList = self.bottomTop_2t(selectionList) # a: object in sorted list b: depth level
+        depthNameList = self.bottomTop_2t(selectionList) 
 
         for i in depthNameList:
-            a, b = i
+            _object, _depth = i
             
             if self.setMatchCaseCheck() == False:
                 l = len(target)
-                oldName = a.upper().split('|')[-1]
+                oldName = _object.upper().split('|')[-1]
                 try:
                     n = oldName.index(target.upper())
 
-                    oldName = a.split('|')[-1]
+                    oldName = _object.split('|')[-1]
                     newName = oldName[:n] + replacement + oldName[(n+l):]
                 except:
-                    oldName = a.split('|')[-1]
+                    oldName = _object.split('|')[-1]
                     newName = oldName
             else:
-                oldName = a.split('|')[-1]
+                oldName = _object.split('|')[-1]
                 newName = oldName.replace(target, replacement)
             
             if newName[0].isalpha() == False:
@@ -364,16 +364,16 @@ class buddyOutl_Window(object):
                     True
                 else:
                     illegalCount += 1
-                    illegalList += cmds.ls(a, sn = True)
+                    illegalList += cmds.ls(_object, sn = True)
                     continue
 
-            cmds.rename(a, newName)
+            cmds.rename(_object, newName)
             if target not in oldName:
                 if self.setMatchCaseCheck() == False and target.upper() in oldName.upper():
                     operationCount += 1
                 else:
                     failureCount += 1
-                    failureList += cmds.ls(a, sn = True)
+                    failureList += cmds.ls(_object, sn = True)
             else:
                 operationCount += 1
         
@@ -627,7 +627,7 @@ class buddyOutl_Window(object):
         selectionList = self.funcSort(self.selectionMethod, 1)
         
         trueNameList = []
-        for i in selectionList:
+        for i in selectionList: #bottomTop_4T (like self.bottomTop_2t() with 4 results per tuples instead)
             #Checking for illegal names
             excText = 'char__'
             excLength = len(excText)
@@ -668,24 +668,24 @@ class buddyOutl_Window(object):
         depthNameList = sorted(trueNameList, key=lambda tup: tup[3], reverse = 1)
         
         for i in depthNameList:
-            a, b, c, d = i #a: i, b: nameBase, c: nameInc, d: depth
+            _object, _nameBase, _nameInc, _depth = i
             
             if self.setIncCheck() == True:
                 if self.setBaseCheck() == False and self.setSuffixCheck() == False:
-                    newName = str(namePrefix) + str(b) + str(nameSuffix)
+                    newName = str(namePrefix) + str(_nameBase) + str(nameSuffix)
                 else:
-                    newName = str(namePrefix) + str(b) + str(self.zeroPad(c, namePad)) + str(nameSuffix)
+                    newName = str(namePrefix) + str(_nameBase) + str(self.zeroPad(_nameInc, namePad)) + str(nameSuffix)
             else:
-                newName = str(namePrefix) + str(b) + str(nameSuffix)
+                newName = str(namePrefix) + str(_nameBase) + str(nameSuffix)
             
             if newName[0].isalpha() == False:
                     if  newName[0] == '_':
-                        cmds.rename(a, newName)
+                        cmds.rename(_object, newName)
                         operationCount += 1
                     else:
                         raise ValueError("Object names can only start with alphabetical characters (A-Z) or with underscores ( _ )")
             else:
-                cmds.rename(a, newName)
+                cmds.rename(_object, newName)
                 operationCount += 1
             
         if operationCount > 0:
@@ -768,17 +768,17 @@ class buddyOutl_Window(object):
         removeAmount = remF + remL
         
         selectionList = self.funcSort(self.selectionMethod, 1)
-        depthNameList = self.bottomTop_2t(selectionList) # a: object in sorted list b: depth level
+        depthNameList = self.bottomTop_2t(selectionList) 
 
         for i in depthNameList:
-            a, b = i
-            name = a
+            _object, _depth = i
+            name = _object
             isFix = False
 
             excText = 'char__'
             excLength = len(excText)
-            if excText in a[:excLength]:
-                name = a[excLength:]
+            if excText in _object[:excLength]:
+                name = _object[excLength:]
                 isFix = False
             
             try:
@@ -797,21 +797,21 @@ class buddyOutl_Window(object):
                             nameBase = excText + nameBase
                             isFix = False
                             illegalCount += 1
-                            illegalList += cmds.ls(a, sn = True)
+                            illegalList += cmds.ls(_object, sn = True)
                     else:
                         if isFix == False:
                             isFix = True
                             fixCount += 1
                 except IndexError:
                     failureCount += 1
-                    failureList += cmds.ls(a, sn = True)
+                    failureList += cmds.ls(_object, sn = True)
                     continue
                 
-                cmds.rename(a, nameBase)
+                cmds.rename(_object, nameBase)
                 operationCount += 1
             except RuntimeError:
                 failureCount += 1
-                failureList += cmds.ls(a, sn = True)
+                failureList += cmds.ls(_object, sn = True)
                 continue
         
         if operationCount > 0:
