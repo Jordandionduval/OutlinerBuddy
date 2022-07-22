@@ -1,7 +1,7 @@
 #-----------------------------Tested for Maya 2022+-----------------------------#
 #
 #             jdd_outlinerBuddy.py 
-#             v1.1.1, last modified 08/07/22
+#             v1.1.2, last modified 22/07/22
 # 
 # MIT License
 # Copyright (c) 2020 Jordan Dion-Duval
@@ -407,11 +407,19 @@ class buddyOutl_Window(object):
     
     def listAll(self):
         res = cmds.ls(dag=True)
-        illegalObjects = cmds.ls(ca=True) + cmds.ls(s = True)
+        illegalObjects = cmds.ls(ca=True)
         illegalObjects = illegalObjects + cmds.listRelatives(illegalObjects, p = True)
+        
         for i in illegalObjects:
             if i in res:
                 res.remove(i)
+        
+        illegalObjects = cmds.ls(res, s = True)
+        
+        for x in illegalObjects:
+            if x in res:
+                res.remove(x)
+
         return res
 
     #-----Update Input Queries-----#
