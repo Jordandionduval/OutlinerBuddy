@@ -62,7 +62,7 @@ class buddyOutl_Window(object):
         self.window = cmds.window(self.window, title=self.title, widthHeight=self.size)
         
         #----------------------------------------------UI Layout----------------------------------------------#
-        #-----Replace-----#
+        #-----------------------------------UI_Replace-----------------------------------#
         cmds.columnLayout(adj = True)
         cmds.separator(style='none', h=5)
         cmds.rowColumnLayout(nc=3, cw = [(1, 60), (2, 250), (3, 90)],
@@ -82,7 +82,7 @@ class buddyOutl_Window(object):
         cmds.separator(height=20)
         cmds.setParent('..')
         
-        #-----Rename-----#
+        #-----------------------------------UI_Rename-----------------------------------#
         cmds.rowColumnLayout(nc=4, cw = [(1, 80), (2, 180), (3, 100), (4,40)])
         defaultBaseBool = 1
         defaultBaseBoolInv = 1-defaultBaseBool
@@ -132,7 +132,7 @@ class buddyOutl_Window(object):
         
         cmds.separator(height=20)
         cmds.setParent('..')
-        #-----Quick Suffix-----#
+        #-----------------------------------UI_Quick Suffix-----------------------------------#
         uiQuick = [
                     "_Grp", 
                     "_Ctrl", 
@@ -164,7 +164,7 @@ class buddyOutl_Window(object):
         
         cmds.separator(height=20)
         
-        #-----Remove-----#
+        #-----------------------------------UI_Remove-----------------------------------#
         cmds.rowColumnLayout(nc=4,  cw=[(1, 150), (2, 30), (3, 40), (4, 60)],
                                     co=[(1,'both', 2), (2,'both', 2)],
                                     ro=[(1,'both', 2), (2,'both', 2)])
@@ -194,7 +194,7 @@ class buddyOutl_Window(object):
         cmds.separator(height=20)
         cmds.setParent('..')
         
-        #-----Selection-----#
+        #-----------------------------------UI_Selection-----------------------------------#
         uiSelect = [
                         "All",
                         "Selection",
@@ -230,7 +230,7 @@ class buddyOutl_Window(object):
         #display new window
         cmds.showWindow()
     #----------------------------------------------Functions----------------------------------------------#
-    #-----General-----#
+    #-----------------------------------General-----------------------------------#
     def funcSort(self, func, x, y='notNested'):
         resList = func()
         sortedList = resList[x]
@@ -422,7 +422,7 @@ class buddyOutl_Window(object):
 
         return res
 
-    #-----Update Input Queries-----#
+    #-----------------------------------Update Input Queries-----------------------------------#
     def updateSearchInput(self, *args):
         self.searchIQ = cmds.textField(self.searchInput, query = True, text = True)
         return self.searchIQ
@@ -463,7 +463,7 @@ class buddyOutl_Window(object):
         self.removeSpecialIQ = cmds.textFieldGrp(self.removeSpecialInput, query = True, text = True)
         return self.removeSpecialIQ
 
-    #-----Radio Collections-----#
+    #-----------------------------------Radio Collections-----------------------------------#
     def selectionMethod(self, *args):
         selectSlIQ = cmds.radioButton(self.selectMethod1, query = True, sl = True)
         selectHiIQ = cmds.radioButton(self.selectMethod2, query = True, sl = True)
@@ -502,7 +502,7 @@ class buddyOutl_Window(object):
             res = self.listAll()
             print('Current object list: ' + str(res))
     
-    #-----CheckBoxes-----#
+    #-----------------------------------CheckBoxes-----------------------------------#
     def setMatchCaseCheck(self, *args):
         self.matchCaseCQ = cmds.checkBox(self.matchCaseCheck, query = True, v = True)
         return self.matchCaseCQ
@@ -576,14 +576,14 @@ class buddyOutl_Window(object):
         self.removeSpecialCQ = cmds.checkBox(self.removeSpecialCheck, query = True, v = True)
         return self.removeSpecialCQ
 
-    #-----Replace-----#
+    #-----------------------------------Replace-----------------------------------#
     def replaceText(self, *args):
         searchIn = self.updateSearchInput()
         replaceIn = self.updateReplaceInput()
 
         self.fastReplace(searchIn, replaceIn)
     
-    #-----Rename-----#
+    #-----------------------------------Rename-----------------------------------#
     def renameText(self, *args):
         operationCount = 0
         #Pre/Suffix
@@ -691,7 +691,7 @@ class buddyOutl_Window(object):
         if operationCount > 0:
             print("Renamed " + str(operationCount) + " object(s).")
     
-    #-----Quick Suffix-----#
+    #-----------------------------------Quick Suffix-----------------------------------#
     def addGrp(self, *args):
         x = 'Grp'
         if self.setUpperCheck() == True:
@@ -748,7 +748,7 @@ class buddyOutl_Window(object):
         isPrefix = self.setMakePrefixCheck()
         self.quickAdd(x, isPrefix)
     
-    #-----Remove-----#
+    #-----------------------------------Remove-----------------------------------#
     def quickRemove(self, remOrder='last'):
         operationCount = 0
         failureCount = 0
@@ -844,7 +844,7 @@ class buddyOutl_Window(object):
         self.removeFirst()
         self.removeLast()
 
-    #-----Selection-----#
+    #-----------------------------------Selection-----------------------------------#
     def selectByType(self, t):
         try:
             selectionList = cmds.ls(sl=True)
