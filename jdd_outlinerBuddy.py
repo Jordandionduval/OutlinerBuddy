@@ -756,6 +756,8 @@ class buddyOutl_Window(object):
         illegalCount = 0
         illegalList = []
         fixCount = 0
+        excText = 'char__'
+        excLength = len(excText)
         
         if remOrder == 'first':
             remF = self.updateRemoveFirstInput()
@@ -764,7 +766,7 @@ class buddyOutl_Window(object):
             remF = 0
             remL = self.updateRemoveLastInput()
         else:
-            raise ValueError("The argument used in self.quickRemove() should either be \"first\" or \"last\".")
+            raise ValueError("The argument used in self.quickRemove() should either be \"first\" or \"last\"")
         removeAmount = remF + remL
         
         selectionList = self.funcSort(self.selectionMethod, 1)
@@ -773,35 +775,25 @@ class buddyOutl_Window(object):
         for i in depthNameList:
             _object, _depth = i
             name = _object
-            isFix = False
-
-            excText = 'char__'
-            excLength = len(excText)
-            if excText in _object[:excLength]:
-                name = _object[excLength:]
-                isFix = False
             
             try:
-                nameShort = name.split('|')[-1]
-                nameBase = nameShort[remF:]
+                name = name.split('|')[-1]
+                if excText in name[:excLength]:
+                    name = name[excLength:]
+                    fixCount += 1
+                nameBase = name[remF:]
                 nameBase = nameBase[::-1]
                 nameBase = nameBase[remL::]
                 nameBase = nameBase[::-1]
                 try:
                     if nameBase[0].isalpha() == False:
                         if  nameBase[0] == '_':
-                            if isFix == False:
-                                isFix = True
-                                fixCount += 1
+                            "Nothing"
                         else:
                             nameBase = excText + nameBase
-                            isFix = False
+                            fixCount -= 1
                             illegalCount += 1
                             illegalList += cmds.ls(_object, sn = True)
-                    else:
-                        if isFix == False:
-                            isFix = True
-                            fixCount += 1
                 except IndexError:
                     failureCount += 1
                     failureList += cmds.ls(_object, sn = True)
@@ -820,7 +812,7 @@ class buddyOutl_Window(object):
             print("# Warning\n# Modified operations(" + str(illegalCount) + "): " + str(illegalList))
             raise Warning("Added \"" + excText + "\" in front of illegal object names")
         if fixCount > 0:
-            print("Removed \"" + excText + "\" from " + fixCount + " object(s) (Object(s) previously had illegal names)")
+            print("Removed \"" + excText + "\" from " + str(fixCount) + " object(s) (The first character of an object's name must be either a letter or an underscore)")
         if failureCount > 0:
             print("# ValueError\n# Failed operations(" + str(failureCount) + "): " + str(failureList))
             raise ValueError("Unable to remove anymore characters from object name")
