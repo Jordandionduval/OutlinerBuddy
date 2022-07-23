@@ -400,9 +400,14 @@ class buddyOutl_Window(object):
 
     def listHi(self):
         cmds.select(hi=True)
-        res = cmds.ls(sl=True)
+        res = cmds.ls(sl=True, dag = True)
         cmds.undo()
-
+        
+        illegalObjects = cmds.ls(res, s = True)
+        for i in illegalObjects:
+            if i in res:
+                res.remove(i)
+        
         return res
     
     def listAll(self):
