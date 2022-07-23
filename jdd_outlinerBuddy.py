@@ -1,7 +1,7 @@
 #-----------------------------Tested for Maya 2022+-----------------------------#
 #
 #             jdd_outlinerBuddy.py 
-#             v1.1.1, last modified 08/07/22
+#             v1.1.2, last modified 22/07/22
 # 
 # MIT License
 # Copyright (c) 2020 Jordan Dion-Duval
@@ -62,7 +62,7 @@ class buddyOutl_Window(object):
         self.window = cmds.window(self.window, title=self.title, widthHeight=self.size)
         
         #----------------------------------------------UI Layout----------------------------------------------#
-        #-----Replace-----#
+        #-----------------------------------UI_Replace-----------------------------------#
         cmds.columnLayout(adj = True)
         cmds.separator(style='none', h=5)
         cmds.rowColumnLayout(nc=3, cw = [(1, 60), (2, 250), (3, 90)],
@@ -82,7 +82,7 @@ class buddyOutl_Window(object):
         cmds.separator(height=20)
         cmds.setParent('..')
         
-        #-----Rename-----#
+        #-----------------------------------UI_Rename-----------------------------------#
         cmds.rowColumnLayout(nc=4, cw = [(1, 80), (2, 180), (3, 100), (4,40)])
         defaultBaseBool = 1
         defaultBaseBoolInv = 1-defaultBaseBool
@@ -132,7 +132,7 @@ class buddyOutl_Window(object):
         
         cmds.separator(height=20)
         cmds.setParent('..')
-        #-----Quick Suffix-----#
+        #-----------------------------------UI_Quick Suffix-----------------------------------#
         uiQuick = [
                     "_Grp", 
                     "_Ctrl", 
@@ -164,7 +164,7 @@ class buddyOutl_Window(object):
         
         cmds.separator(height=20)
         
-        #-----Remove-----#
+        #-----------------------------------UI_Remove-----------------------------------#
         cmds.rowColumnLayout(nc=4,  cw=[(1, 150), (2, 30), (3, 40), (4, 60)],
                                     co=[(1,'both', 2), (2,'both', 2)],
                                     ro=[(1,'both', 2), (2,'both', 2)])
@@ -194,7 +194,7 @@ class buddyOutl_Window(object):
         cmds.separator(height=20)
         cmds.setParent('..')
         
-        #-----Selection-----#
+        #-----------------------------------UI_Selection-----------------------------------#
         uiSelect = [
                         "All",
                         "Selection",
@@ -230,7 +230,7 @@ class buddyOutl_Window(object):
         #display new window
         cmds.showWindow()
     #----------------------------------------------Functions----------------------------------------------#
-    #-----General-----#
+    #-----------------------------------General-----------------------------------#
     def funcSort(self, func, x, y='notNested'):
         resList = func()
         sortedList = resList[x]
@@ -276,17 +276,17 @@ class buddyOutl_Window(object):
         operationCount = 0
         
         selectionList = self.funcSort(self.selectionMethod, 1)
-        depthNameList = self.bottomTop_2t(selectionList) # a: object in sorted list b: depth level
+        depthNameList = self.bottomTop_2t(selectionList) 
 
         for i in depthNameList:
-            a, b = i
-            oldName = a.split('|')[-1]
+            _object, _depth = i
+            oldName = _object.split('|')[-1]
             if isPrefix == True:
                 newName = quickName + separator + oldName
             else:
                 newName = oldName + separator + quickName
             
-            cmds.rename(a, newName)
+            cmds.rename(_object, newName)
             operationCount += 1
         
         if operationCount > 0:
@@ -339,24 +339,24 @@ class buddyOutl_Window(object):
         illegalList = []
         
         selectionList = self.funcSort(self.selectionMethod, 1)
-        depthNameList = self.bottomTop_2t(selectionList) # a: object in sorted list b: depth level
+        depthNameList = self.bottomTop_2t(selectionList) 
 
         for i in depthNameList:
-            a, b = i
+            _object, _depth = i
             
             if self.setMatchCaseCheck() == False:
                 l = len(target)
-                oldName = a.upper().split('|')[-1]
+                oldName = _object.upper().split('|')[-1]
                 try:
                     n = oldName.index(target.upper())
 
-                    oldName = a.split('|')[-1]
+                    oldName = _object.split('|')[-1]
                     newName = oldName[:n] + replacement + oldName[(n+l):]
                 except:
-                    oldName = a.split('|')[-1]
+                    oldName = _object.split('|')[-1]
                     newName = oldName
             else:
-                oldName = a.split('|')[-1]
+                oldName = _object.split('|')[-1]
                 newName = oldName.replace(target, replacement)
             
             if newName[0].isalpha() == False:
@@ -364,16 +364,16 @@ class buddyOutl_Window(object):
                     True
                 else:
                     illegalCount += 1
-                    illegalList += cmds.ls(a, sn = True)
+                    illegalList += cmds.ls(_object, sn = True)
                     continue
 
-            cmds.rename(a, newName)
+            cmds.rename(_object, newName)
             if target not in oldName:
                 if self.setMatchCaseCheck() == False and target.upper() in oldName.upper():
                     operationCount += 1
                 else:
                     failureCount += 1
-                    failureList += cmds.ls(a, sn = True)
+                    failureList += cmds.ls(_object, sn = True)
             else:
                 operationCount += 1
         
@@ -406,11 +406,23 @@ class buddyOutl_Window(object):
         return res
     
     def listAll(self):
-        res = cmds.ls(dag=True, ro = False)
+        res = cmds.ls(dag=True)
+        illegalObjects = cmds.ls(ca=True)
+        illegalObjects = illegalObjects + cmds.listRelatives(illegalObjects, p = True)
+        
+        for i in illegalObjects:
+            if i in res:
+                res.remove(i)
+        
+        illegalObjects = cmds.ls(res, s = True)
+        
+        for x in illegalObjects:
+            if x in res:
+                res.remove(x)
 
         return res
 
-    #-----Update Input Queries-----#
+    #-----------------------------------Update Input Queries-----------------------------------#
     def updateSearchInput(self, *args):
         self.searchIQ = cmds.textField(self.searchInput, query = True, text = True)
         return self.searchIQ
@@ -451,7 +463,7 @@ class buddyOutl_Window(object):
         self.removeSpecialIQ = cmds.textFieldGrp(self.removeSpecialInput, query = True, text = True)
         return self.removeSpecialIQ
 
-    #-----Radio Collections-----#
+    #-----------------------------------Radio Collections-----------------------------------#
     def selectionMethod(self, *args):
         selectSlIQ = cmds.radioButton(self.selectMethod1, query = True, sl = True)
         selectHiIQ = cmds.radioButton(self.selectMethod2, query = True, sl = True)
@@ -490,7 +502,7 @@ class buddyOutl_Window(object):
             res = self.listAll()
             print('Current object list: ' + str(res))
     
-    #-----CheckBoxes-----#
+    #-----------------------------------CheckBoxes-----------------------------------#
     def setMatchCaseCheck(self, *args):
         self.matchCaseCQ = cmds.checkBox(self.matchCaseCheck, query = True, v = True)
         return self.matchCaseCQ
@@ -564,14 +576,14 @@ class buddyOutl_Window(object):
         self.removeSpecialCQ = cmds.checkBox(self.removeSpecialCheck, query = True, v = True)
         return self.removeSpecialCQ
 
-    #-----Replace-----#
+    #-----------------------------------Replace-----------------------------------#
     def replaceText(self, *args):
         searchIn = self.updateSearchInput()
         replaceIn = self.updateReplaceInput()
 
         self.fastReplace(searchIn, replaceIn)
     
-    #-----Rename-----#
+    #-----------------------------------Rename-----------------------------------#
     def renameText(self, *args):
         operationCount = 0
         #Pre/Suffix
@@ -615,7 +627,7 @@ class buddyOutl_Window(object):
         selectionList = self.funcSort(self.selectionMethod, 1)
         
         trueNameList = []
-        for i in selectionList:
+        for i in selectionList: #bottomTop_4T (like self.bottomTop_2t() with 4 results per tuples instead)
             #Checking for illegal names
             excText = 'char__'
             excLength = len(excText)
@@ -656,30 +668,30 @@ class buddyOutl_Window(object):
         depthNameList = sorted(trueNameList, key=lambda tup: tup[3], reverse = 1)
         
         for i in depthNameList:
-            a, b, c, d = i #a: i, b: nameBase, c: nameInc, d: depth
+            _object, _nameBase, _nameInc, _depth = i
             
             if self.setIncCheck() == True:
                 if self.setBaseCheck() == False and self.setSuffixCheck() == False:
-                    newName = str(namePrefix) + str(b) + str(nameSuffix)
+                    newName = str(namePrefix) + str(_nameBase) + str(nameSuffix)
                 else:
-                    newName = str(namePrefix) + str(b) + str(self.zeroPad(c, namePad)) + str(nameSuffix)
+                    newName = str(namePrefix) + str(_nameBase) + str(self.zeroPad(_nameInc, namePad)) + str(nameSuffix)
             else:
-                newName = str(namePrefix) + str(b) + str(nameSuffix)
+                newName = str(namePrefix) + str(_nameBase) + str(nameSuffix)
             
             if newName[0].isalpha() == False:
                     if  newName[0] == '_':
-                        cmds.rename(a, newName)
+                        cmds.rename(_object, newName)
                         operationCount += 1
                     else:
                         raise ValueError("Object names can only start with alphabetical characters (A-Z) or with underscores ( _ )")
             else:
-                cmds.rename(a, newName)
+                cmds.rename(_object, newName)
                 operationCount += 1
             
         if operationCount > 0:
             print("Renamed " + str(operationCount) + " object(s).")
     
-    #-----Quick Suffix-----#
+    #-----------------------------------Quick Suffix-----------------------------------#
     def addGrp(self, *args):
         x = 'Grp'
         if self.setUpperCheck() == True:
@@ -736,7 +748,7 @@ class buddyOutl_Window(object):
         isPrefix = self.setMakePrefixCheck()
         self.quickAdd(x, isPrefix)
     
-    #-----Remove-----#
+    #-----------------------------------Remove-----------------------------------#
     def quickRemove(self, remOrder='last'):
         operationCount = 0
         failureCount = 0
@@ -744,6 +756,8 @@ class buddyOutl_Window(object):
         illegalCount = 0
         illegalList = []
         fixCount = 0
+        excText = 'char__'
+        excLength = len(excText)
         
         if remOrder == 'first':
             remF = self.updateRemoveFirstInput()
@@ -752,54 +766,44 @@ class buddyOutl_Window(object):
             remF = 0
             remL = self.updateRemoveLastInput()
         else:
-            raise ValueError("The argument used in self.quickRemove() should either be \"first\" or \"last\".")
+            raise ValueError("The argument used in self.quickRemove() should either be \"first\" or \"last\"")
         removeAmount = remF + remL
         
         selectionList = self.funcSort(self.selectionMethod, 1)
-        depthNameList = self.bottomTop_2t(selectionList) # a: object in sorted list b: depth level
+        depthNameList = self.bottomTop_2t(selectionList) 
 
         for i in depthNameList:
-            a, b = i
-            name = a
-            isFix = False
-
-            excText = 'char__'
-            excLength = len(excText)
-            if excText in a[:excLength]:
-                name = a[excLength:]
-                isFix = False
+            _object, _depth = i
+            name = _object
             
             try:
-                nameShort = name.split('|')[-1]
-                nameBase = nameShort[remF:]
+                name = name.split('|')[-1]
+                if excText in name[:excLength]:
+                    name = name[excLength:]
+                    fixCount += 1
+                nameBase = name[remF:]
                 nameBase = nameBase[::-1]
                 nameBase = nameBase[remL::]
                 nameBase = nameBase[::-1]
                 try:
                     if nameBase[0].isalpha() == False:
                         if  nameBase[0] == '_':
-                            if isFix == False:
-                                isFix = True
-                                fixCount += 1
+                            "Nothing"
                         else:
                             nameBase = excText + nameBase
-                            isFix = False
+                            fixCount -= 1
                             illegalCount += 1
-                            illegalList += cmds.ls(a, sn = True)
-                    else:
-                        if isFix == False:
-                            isFix = True
-                            fixCount += 1
+                            illegalList += cmds.ls(_object, sn = True)
                 except IndexError:
                     failureCount += 1
-                    failureList += cmds.ls(a, sn = True)
+                    failureList += cmds.ls(_object, sn = True)
                     continue
                 
-                cmds.rename(a, nameBase)
+                cmds.rename(_object, nameBase)
                 operationCount += 1
             except RuntimeError:
                 failureCount += 1
-                failureList += cmds.ls(a, sn = True)
+                failureList += cmds.ls(_object, sn = True)
                 continue
         
         if operationCount > 0:
@@ -808,7 +812,7 @@ class buddyOutl_Window(object):
             print("# Warning\n# Modified operations(" + str(illegalCount) + "): " + str(illegalList))
             raise Warning("Added \"" + excText + "\" in front of illegal object names")
         if fixCount > 0:
-            print("Removed \"" + excText + "\" from " + fixCount + " object(s) (Object(s) previously had illegal names)")
+            print("Removed \"" + excText + "\" from " + str(fixCount) + " object(s) (The first character of an object's name must be either a letter or an underscore)")
         if failureCount > 0:
             print("# ValueError\n# Failed operations(" + str(failureCount) + "): " + str(failureList))
             raise ValueError("Unable to remove anymore characters from object name")
@@ -832,7 +836,7 @@ class buddyOutl_Window(object):
         self.removeFirst()
         self.removeLast()
 
-    #-----Selection-----#
+    #-----------------------------------Selection-----------------------------------#
     def selectByType(self, t):
         try:
             selectionList = cmds.ls(sl=True)
