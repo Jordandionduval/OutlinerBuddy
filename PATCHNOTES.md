@@ -1,4 +1,11 @@
 ### Patch notes
+###### v1.1.2
+Minor bugfixes
+- Fixed 'All' selection method
+- Fixed 'All' and 'Hierarchy' selection method renaming shapes or objects that cannot be renamed (like read only objects)
+- Fixed remove command incorrectly displaying feedback message
+- Improved code readability for tuples
+
 ###### v1.1.1
 Bugfix on objects with no parents creating errors and added more errors and warnings
 - Simplified removeFirst() and removeLast() code block (both commands now rely on quickRemove())
