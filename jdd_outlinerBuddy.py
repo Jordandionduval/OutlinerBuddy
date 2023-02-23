@@ -229,6 +229,7 @@ class buddyOutl_Window(object):
         
         #display new window
         cmds.showWindow()
+
     #----------------------------------------------Functions----------------------------------------------#
     #-----------------------------------General-----------------------------------#
     def funcSort(self, func, x, y='notNested'):
@@ -292,44 +293,30 @@ class buddyOutl_Window(object):
         if operationCount > 0:
             print("Added " + quickName + " to " + str(operationCount) + " object(s).")
     
-    def updateQuickUi(self, con1, con2):
-        uiQuick = [
-                    "Grp", 
-                    "Ctrl", 
-                    "Drv", 
-                    "Jnt", 
-                    "Geo", 
-                    "L", 
-                    "C", 
-                    "R"
-                    ]
-        
-        separator = '_'
-        if con2 == True:
+    def updateQuickUi(self, uiFormat, uiType, separator='_'):
+        quickUiDict = {
+                    "Grp":self.quickGrp, 
+                    "Ctrl":self.quickCtrl, 
+                    "Drv":self.quickDrv, 
+                    "Jnt":self.quickJnt, 
+                    "Geo":self.quickGeo, 
+                    "L":self.quickL, 
+                    "C":self.quickC, 
+                    "R":self.quickR
+                    }
+                    
+        if uiType == True:
             makeSuffix = ''
             makePrefix = separator
         else:
             makeSuffix = separator
             makePrefix = ''
 
-        if con1 == True:
-            cmds.button(self.quickGrp, e = True, l = makeSuffix + uiQuick[0].upper() + makePrefix)
-            cmds.button(self.quickCtrl, e = True, l = makeSuffix + uiQuick[1].upper() + makePrefix)
-            cmds.button(self.quickDrv, e = True, l = makeSuffix + uiQuick[2].upper() + makePrefix)
-            cmds.button(self.quickJnt, e = True, l = makeSuffix + uiQuick[3].upper() + makePrefix)
-            cmds.button(self.quickGeo, e = True, l = makeSuffix + uiQuick[4].upper() + makePrefix)
-            cmds.button(self.quickL, e = True, l = makeSuffix + uiQuick[5].upper() + makePrefix)
-            cmds.button(self.quickC, e = True, l = makeSuffix + uiQuick[6].upper() + makePrefix)
-            cmds.button(self.quickR, e = True, l = makeSuffix + uiQuick[7].upper() + makePrefix)
-        else:
-            cmds.button(self.quickGrp, e = True, l = makeSuffix + uiQuick[0] + makePrefix)
-            cmds.button(self.quickCtrl, e = True, l = makeSuffix + uiQuick[1] + makePrefix)
-            cmds.button(self.quickDrv, e = True, l = makeSuffix + uiQuick[2] + makePrefix)
-            cmds.button(self.quickJnt, e = True, l = makeSuffix + uiQuick[3] + makePrefix)
-            cmds.button(self.quickGeo, e = True, l = makeSuffix + uiQuick[4] + makePrefix)
-            cmds.button(self.quickL, e = True, l = makeSuffix + uiQuick[5] + makePrefix)
-            cmds.button(self.quickC, e = True, l = makeSuffix + uiQuick[6] + makePrefix)
-            cmds.button(self.quickR, e = True, l = makeSuffix + uiQuick[7] + makePrefix)
+        for i in quickUiDict:
+            if uiFormat == True:
+                cmds.button(quickUiDict[i], e = True, l = makeSuffix + i.upper() + makePrefix)
+            else:
+                cmds.button(quickUiDict[i], e = True, l = makeSuffix + i + makePrefix)
     
     def fastReplace(self, target, replacement=''):
         operationCount = 0
