@@ -14,7 +14,7 @@ A little tool used with Maya to replace the default renaming tool.
 
 ## Overview
 
-I made this tool as a way to practice python. The goal when creating this tool was to replace Maya's old renaming tool for something a little more versatile and powerful.
+I made this tool over the summer as a way to learn and practice python. The goal when creating this tool was to replace Maya's old renaming tool for something a little more versatile and powerful.
 
 The tool currently is currently separated in 5 parts to allow users the following renaming options:
 - Replace - Querries a string in selected objects' names and replaces it with target name.
